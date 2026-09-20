@@ -1,0 +1,6 @@
+sem voice: manuf_pib: Tobit 0.0183 (p 0.000) | OLS-cluster p 0.032 | n = 205 
+com voice: manuf_pib: Tobit 0.0098 (p 0.029) | OLS-cluster p 0.265 | n = 205 
+cor(manuf_pib, voice) = -0.6 
+sem os 13 países de patente ~0, sem voice: manuf_pib: Tobit 0.0197 (p 0.001) | OLS-cluster p 0.025 | n = 136 
+sem os 13 países de patente ~0, com voice: manuf_pib: Tobit 0.0036 (p 0.704) | OLS-cluster p 0.795 | n = 136 
+voice: Tobit -0.0075 (p 0.00058 ) | voice médio: 13 países 78 vs demais 64 | China 31 

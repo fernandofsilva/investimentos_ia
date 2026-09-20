@@ -1,0 +1,10 @@
+cenario,n,efic_pct,media,spearman_vs_principal
+intensiva_S,208,7.692,0.394,0.117
+intensiva_T,208,4.327,0.197,0.902
+intensiva_C,208,4.327,0.208,0.937
+anual_ST,208,36.058,0.7,0.844
+shift_1mi_ST,208,9.135,0.486,1
+sem_zeros_ST,191,10.471,0.486,0.988
+T_ate_2019,174,3.448,0.159,0.993
+sem_LUX_SGP_ST,195,9.744,0.495,1
+lag_t-1_ST,154,9.091,0.476,0.888

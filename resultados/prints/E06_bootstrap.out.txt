@@ -1,0 +1,6 @@
+      Min.    1st Qu.     Median       Mean    3rd Qu.       Max. 
+-76.563386  -0.007497   0.001707  -0.453037   0.013903   0.396542 
+escores negativos: 77 de 208 
+     Min.   1st Qu.    Median      Mean   3rd Qu.      Max. 
+0.0004544 0.0100638 0.0349273 0.0965479 0.1085532 0.7343388 
+negativos: 0 | Spearman com o escore original: 0.999 

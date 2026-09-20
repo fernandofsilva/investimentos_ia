@@ -1,0 +1,11 @@
+# A tibble: 4 × 5
+  Country       pat_pm pop_mi pat_cnt  pubs
+  <chr>          <dbl>  <dbl>   <dbl> <dbl>
+1 China           59.9 1412.    84611 77180
+2 Luxembourg      59.3    0.6      38   248
+3 Japan           23.6  126.     2964  9556
+4 United States   20.9  332      6945 49289
+contagens a menos de 0,02 de um inteiro: 58 % (esperado ao acaso: 4%)
+cor(log publicações, log população) = 0.71 | cor(log patentes per capita, log população) = -0.03 
+zeros em AI.Investment: 17 | menor valor positivo: US$ 1.000.000 
+colunas log_* são log1p? max|log_RD_Percentage - log1p(R.D_Percentage)| = 7.4e-10 

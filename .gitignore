@@ -47,3 +47,13 @@ po/*~
 
 # RStudio Connect folder
 rsconnect/
+
+# JSON bruto do WDI (regenerável com dados/baixar_wdi.sh)
+dados/raw_wdi/
+
+# arquivos separados para exclusão manual e lixo do Finder
+deletar/
+.DS_Store
+
+# arquivos da aula
+material_disciplina/

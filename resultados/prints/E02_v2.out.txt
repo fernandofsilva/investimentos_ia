@@ -1,0 +1,8 @@
+Spearman(S, T) = 0.246 
+S >> T (publica, não patenteia): India -0.93, Italy -0.86, Poland -0.73, Spain -0.68, Malaysia -0.62, Brazil -0.57 
+T >> S: Luxembourg 0.83, Singapore 0.77, Slovenia 0.72 
+cor(gap, log população) = -0.53 
+            Estimate Std. Error t value Pr(>|t|)
+(Intercept)   -0.432      0.701  -0.616    0.542
+log_pop       -0.105      0.040  -2.618    0.013
+log_pibpc      0.060      0.063   0.961    0.344

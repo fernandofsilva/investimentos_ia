@@ -1,0 +1,3 @@
+13 países | Malmquist = 0.971 | catch-up = 1.089 | deslocamento da fronteira = 0.891 
+FDH agrupada: eficientes 25 % (anual: 53%)
+order-m (m = 25): lambda_m mediano 5.94 | acima da fronteira parcial (eff < 1): 16 %

@@ -1,0 +1,13 @@
+escore,grupo,kruskal_p,ks_p,media_alta,media_baixa
+bcc_S,income,6.5e-5,NA,NA,NA
+bcc_S,regiao,4.17e-10,NA,NA,NA
+bcc_S,zero_inv,0.186,NA,NA,NA
+bcc_T,income,2.75e-7,NA,NA,NA
+bcc_T,regiao,1.36e-12,NA,NA,NA
+bcc_T,zero_inv,1.61e-5,NA,NA,NA
+bcc_C,income,2.26e-6,NA,NA,NA
+bcc_C,regiao,5.82e-12,NA,NA,NA
+bcc_C,zero_inv,1.97e-5,NA,NA,NA
+bcc_S,manuf_pib > mediana,0.00211,0.00632,0.522,0.392
+bcc_T,manuf_pib > mediana,7.34e-4,0.00893,0.187,0.107
+bcc_C,manuf_pib > mediana,0.00684,0.0323,0.199,0.133

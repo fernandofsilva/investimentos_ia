@@ -1,0 +1,10 @@
+delta = distância à fronteira: mediana 21.2 | máximo 1456.2 | sigma_hat = 720.1 
+             beta  IC_inf  IC_sup
+manuf_pib -446.31 -751.48 -534.29
+manuf_exp   76.35  104.65  149.41
+gov        289.22  417.66  558.84
+sigma = 1.48 
+            beta IC_inf IC_sup
+manuf_pib -0.142 -0.198 -0.083
+manuf_exp  0.021  0.010  0.032
+gov        0.708  0.180  1.140

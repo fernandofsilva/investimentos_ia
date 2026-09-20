@@ -1,0 +1,5 @@
+S: lambda = -1.39 | T: lambda = 0.53 
+T: elasticidades (investimento, P&D) = 0.14 / 0.98 | TE média = 0.61 | cor(TE_SFA, BCC_T) = 0.62 
+Warning message: lambda is negative.
+  This could indicate that there is no inefficiency,
+  or that the model is misspecified.

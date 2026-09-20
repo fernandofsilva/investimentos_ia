@@ -1,0 +1,129 @@
+=== 1. Dados: base + WDI, unidades consistentes ===
+Voice & Accountability (WGI, percentil): 208 de 208 obs | cor(voice, gov) = 0.679
+n = 208 país-ano | países = 37 | zeros de investimento = 17
+cobertura WDI nas 208 obs: manuf_pib 205 originais + 3 preenchidos | manuf_exp 208 | pesq_pm 177 originais + 31 preenchidos | rd_pct_wdi 208
+sanidade: cor(R.D_Percentage da base, GB.XPD.RSDV.GD.ZS do WDI) = 1 | deflator EUA 2013→2021: 0.974 0.991 1 1.01 1.028 1.051 1.068 1.083 1.132
+patentes: contagem recuperada = AI.Patent.Applications × pop; 58% a <0,02 de um inteiro
+manuf_pib sem valor no WDI (ficam fora do 2º estágio): Bulgaria-2018, Bulgaria-2019, Bulgaria-2021
+=== 2. Descritivas (template lesson1.4) ===
+=== 3. Núcleo: FDH, CCR, BCC, folgas — fronteira agrupada (208 DMUs), forma extensiva ===
+S  | eficientes FDH 25.0%  CCR 2.4%  BCC 7.7% | média BCC 0.459 | zeros efic. BCC 23.5% vs não-zeros 6.3%
+T  | eficientes FDH 18.3%  CCR 1.9%  BCC 3.4% | média BCC 0.146 | zeros efic. BCC 11.8% vs não-zeros 2.6%
+ST | eficientes FDH 46.6%  CCR 4.8%  BCC 9.1% | média BCC 0.486 | zeros efic. BCC 29.4% vs não-zeros 7.3%
+C  | eficientes FDH 22.6%  CCR 1.9%  BCC 3.8% | média BCC 0.165 | zeros efic. BCC 17.6% vs não-zeros 2.6%
+Spearman BCC: S×T 0.453 | S×C 0.383 | T×C 0.98 | SE(ST) média (sem zeros) 0.593
+BCC-eficientes S: Australia-2013, China-2013, China-2019, China-2020, China-2021, India-2013, India-2016, India-2019, India-2020, Malaysia-2014, Peru-2018, Peru-2021, Romania-2018, Romania-2020, Ukraine-2017, Ukraine-2018
+BCC-eficientes T: Australia-2013, China-2013, China-2020, China-2021, Mexico-2018, Peru-2018, Ukraine-2014
+BCC-eficientes C: Australia-2013, China-2013, China-2020, China-2021, Luxembourg-2016, Mexico-2018, Peru-2018, Ukraine-2014
+Conversão (C) por país, top 8: China 0.63, Australia 0.54, Peru 0.53, Ukraine 0.49, Japan 0.46, Mexico 0.44, Luxembourg 0.35, United States 0.23
+Conversão (C), Brasil: 0.186 (10º de 37) | cor(C, manuf_pib) por país = 0.089 | cor(gap T−S, log pop) = -0.253
+benchmarks mais usados (BCC ST): Romania-2020 94, India-2013 75, China-2013 66, India-2016 63, India-2019 58, Malaysia-2014 58
+folgas BCC ST: DMUs com folga em investimento 5% (média rel. 0.03), em P&D 6% (média rel. 0.02)
+=== 4. Robustez da especificação (BCC, comparação com o núcleo agrupado) ===
+intensiva: eficientes BCC S 7.7% T 4.3% C 4.3% | eficientes em T intensiva: Australia-2013, China-2020, China-2021, Indonesia-2013, Indonesia-2016, Luxembourg-2021, Mexico-2018, South Africa-2014, Ukraine-2014
+         cenario   n efic_pct media spearman_vs_principal
+1    intensiva_S 208    7.692 0.394                 0.117
+2    intensiva_T 208    4.327 0.197                 0.902
+3    intensiva_C 208    4.327 0.208                 0.937
+4       anual_ST 208   36.058 0.700                 0.844
+5   shift_1mi_ST 208    9.135 0.486                 1.000
+6   sem_zeros_ST 191   10.471 0.486                 0.988
+7     T_ate_2019 174    3.448 0.159                 0.993
+8 sem_LUX_SGP_ST 195    9.744 0.495                 1.000
+9     lag_t-1_ST 154    9.091 0.476                 0.888
+=== 5. Outliers: supereficiência de Andersen-Petersen (ST) ===
+supereficiência CRS (ST), top 6: Ukraine-2014 1.81, Malaysia-2014 1.78, Australia-2013 1.27, China-2020 1.27, China-2021 1.18, Romania-2018 1.16
+VRS infactíveis (extremas): 0 DMUs
+=== 6. Bootstrap de Simar-Wilson (rDEA::dea.robust, B = 500) ===
+S: escore original médio 0.459 | corrigido de viés (escala phi) 0.352 | rDEA na escala theta 0.231 (4 negativos) | Spearman original×corrigido 0.997 | largura média do IC 0.073
+T: escore original médio 0.146 | corrigido de viés (escala phi) 0.097 | rDEA na escala theta -0.509 (83 negativos) | Spearman original×corrigido 0.999 | largura média do IC 0.036
+C: escore original médio 0.165 | corrigido de viés (escala phi) 0.112 | rDEA na escala theta -0.990 (86 negativos) | Spearman original×corrigido 0.989 | largura média do IC 0.044
+=== 7. Fronteiras parciais: Order-m (nonparaeff::orderm) e Order-alpha (implementação própria) ===
+order-m S, M =  25: mediana 5.793 | % acima da fronteira parcial (eff < 1) 17% | Spearman com BCC_S -0.223
+order-m S, M =  50: mediana 6.881 | % acima da fronteira parcial (eff < 1) 13% | Spearman com BCC_S -0.244
+order-m S, M = 100: mediana 8.547 | % acima da fronteira parcial (eff < 1) 12% | Spearman com BCC_S -0.260
+order-alpha S (eficiência de produto, 1 = na fronteira parcial): α=0,90 → 56% acima (<1); α=0,95 → 47%; α=0,99 → 28%; α=1 (FDH) → 25% eficientes
+=== 8. SFA e COLS (Benchmarking::sfa, template lesson3.7) ===
+SFA S: coef log inv 0.104, log P&D 0.570 | lambda -1.39 (66% da variação é ineficiência) | TE média 1.825 | cor(SFA, BCC) 0.896 | cor(SFA, COLS) 0.999
+SFA T: coef log inv 0.135, log P&D 0.984 | lambda 0.53 (22% da variação é ineficiência) | TE média 0.607 | cor(SFA, BCC) 0.618 | cor(SFA, COLS) 0.616
+=== 9. Classes latentes (poLCA sobre decis, template lesson3.7) ===
+poLCA: BIC k=2..4 = 3748 / 3754 / 3845 → k = 2 | tamanhos: 80/128
+      renda
+classe Alta Média-alta Média-baixa
+     1   55         17           8
+     2   85         42           1
+Kruskal manuf_pib ~ classe: p = 0.19 | BCC ST médio por classe: 0.5 / 0.478 | log pubs médio por classe: 8.7 / 6.39
+=== 10. Malmquist (nonparaeff::faremalm2, painel balanceado 2016–2021, modelo S) ===
+Malmquist S (13 países, 2016–2021): média geométrica M = 0.971 | EC = 1.089 | TC = 0.891
+  year     M    EC    TC
+1 2017 0.931 0.890 1.045
+2 2018 1.133 0.998 1.135
+3 2019 0.882 1.080 0.817
+4 2020 1.020 0.899 1.134
+5 2021 0.909 1.774 0.512
+=== 11. Ganhos com fusões: blocos regionais (Benchmarking::make.merge / dea.merge, template lesson2.3) ===
+                bloco anos efic_fusao aprendizado harmonia escala
+1 Aliança do Pacífico    1      0.625       0.492    0.925  1.372
+2             Benelux    2      0.209       0.158    0.934  1.418
+3              Ibéria    5      0.575       0.530    0.908  1.189
+4            Leste UE    1      0.634       0.624    0.790  1.286
+5            Mercosul    6      0.389       0.319    0.937  1.276
+6            Visegrád    9      0.568       0.481    0.963  1.214
+=== 12. TOPSIS (pacote topsis, pesos iguais) ===
+TOPSIS: Spearman com BCC ST = 0.636 | top 5: China-2021, China-2020, China-2019, China-2018, China-2017
+=== 13. Segundo estágio (Lecture 04): testes não paramétricos, Tobit, Simar-Wilson alg. 2 ===
+obs. completas para o 2º estágio: 205 de 208
+   escore               grupo kruskal_p    ks_p media_alta media_baixa
+1   bcc_S              income  6.50e-05      NA         NA          NA
+2   bcc_S              regiao  4.17e-10      NA         NA          NA
+3   bcc_S            zero_inv  1.86e-01      NA         NA          NA
+4   bcc_T              income  2.75e-07      NA         NA          NA
+5   bcc_T              regiao  1.36e-12      NA         NA          NA
+6   bcc_T            zero_inv  1.61e-05      NA         NA          NA
+7   bcc_C              income  2.26e-06      NA         NA          NA
+8   bcc_C              regiao  5.82e-12      NA         NA          NA
+9   bcc_C            zero_inv  1.97e-05      NA         NA          NA
+10  bcc_S manuf_pib > mediana  2.11e-03 0.00632      0.522       0.392
+11  bcc_T manuf_pib > mediana  7.34e-04 0.00893      0.187       0.107
+12  bcc_C manuf_pib > mediana  6.84e-03 0.03230      0.199       0.133
+H1 (manuf_pib) por escore — Tobit e OLS-cluster:
+     escore  variavel    coef      ep      p coef_ols p_cluster
+1     bcc_S manuf_pib 0.00640 0.00487 0.1890  0.00597     0.514
+2     bcc_T manuf_pib 0.00950 0.00422 0.0244  0.00937     0.195
+3     bcc_C manuf_pib 0.00981 0.00449 0.0290  0.00971     0.265
+4 bcc_S_int manuf_pib 0.00352 0.00440 0.4250  0.00425     0.582
+5 bcc_T_int manuf_pib 0.01080 0.00503 0.0322  0.01080     0.291
+6 bcc_C_int manuf_pib 0.01140 0.00520 0.0290  0.01140     0.290
+cor(manuf_pib, voice) = -0.597 | cor(manuf_pib, gov) = -0.204 | voice médio: 13 EPO 78.1 vs demais 63.8
+   escore        contextuais           amostra   n manuf_tobit manuf_p_tobit manuf_p_ols_cluster voice_tobit voice_p_tobit gov_tobit gov_p_tobit
+1   bcc_S            nenhuma             todos 205     0.01240      3.02e-03              0.1890          NA            NA        NA          NA
+2   bcc_S            nenhuma sem 13 paises EPO 136     0.02250      4.48e-04              0.0535          NA            NA        NA          NA
+3   bcc_S      so governanca             todos 205     0.01330      1.42e-03              0.1540          NA            NA   0.08340     0.02500
+4   bcc_S      so governanca sem 13 paises EPO 136     0.02270      3.11e-04              0.0311          NA            NA   0.11600     0.00788
+5   bcc_S           so voice             todos 205     0.00804      1.03e-01              0.4390    -0.00375      9.93e-02        NA          NA
+6   bcc_S           so voice sem 13 paises EPO 136     0.02000      3.83e-02              0.2100    -0.00126      7.30e-01        NA          NA
+7   bcc_S governanca e voice             todos 205     0.00640      1.89e-01              0.5140    -0.00627      8.76e-03   0.11800     0.00242
+8   bcc_S governanca e voice sem 13 paises EPO 136     0.01120      2.52e-01              0.4710    -0.00579      1.34e-01   0.14300     0.00237
+9   bcc_T            nenhuma             todos 205     0.01900      1.92e-07              0.0170          NA            NA        NA          NA
+10  bcc_T            nenhuma sem 13 paises EPO 136     0.02330      8.64e-05              0.0146          NA            NA        NA          NA
+11  bcc_T      so governanca             todos 205     0.01850      4.00e-07              0.0207          NA            NA  -0.04250     0.18800
+12  bcc_T      so governanca sem 13 paises EPO 136     0.02310      8.86e-05              0.0108          NA            NA  -0.05340     0.19600
+13  bcc_T           so voice             todos 205     0.00953      2.31e-02              0.1970    -0.00790      3.68e-05        NA          NA
+14  bcc_T           so voice sem 13 paises EPO 136     0.00417      6.36e-01              0.7640    -0.00940      4.38e-03        NA          NA
+15  bcc_T governanca e voice             todos 205     0.00950      2.44e-02              0.1950    -0.00795      9.82e-05   0.00235     0.94400
+16  bcc_T governanca e voice sem 13 paises EPO 136     0.00485      5.97e-01              0.7450    -0.00905      1.11e-02  -0.01140     0.79300
+17  bcc_C            nenhuma             todos 205     0.01880      1.10e-06              0.0250          NA            NA        NA          NA
+18  bcc_C            nenhuma sem 13 paises EPO 136     0.01980      9.45e-04              0.0315          NA            NA        NA          NA
+19  bcc_C      so governanca             todos 205     0.01830      2.20e-06              0.0322          NA            NA  -0.04510     0.18600
+20  bcc_C      so governanca sem 13 paises EPO 136     0.01970      9.83e-04              0.0246          NA            NA  -0.05030     0.22800
+21  bcc_C           so voice             todos 205     0.00977      2.86e-02              0.2760    -0.00754      2.17e-04        NA          NA
+22  bcc_C           so voice sem 13 paises EPO 136     0.00277      7.58e-01              0.8280    -0.00842      1.23e-02        NA          NA
+23  bcc_C governanca e voice             todos 205     0.00981      2.90e-02              0.2650    -0.00748      5.78e-04  -0.00274     0.93800
+24  bcc_C governanca e voice sem 13 paises EPO 136     0.00355      7.04e-01              0.7950    -0.00801      2.74e-02  -0.01320     0.76700
+dea.env.robust S linear (7s): sigma = 4.14 | beta manuf_pib = -0.272 [-0.624; 0.073]
+SW alg. 2 em log(delta) S (6s, 500/500 réplicas ok): sigma 0.55 | beta manuf_pib = -0.0159 [-0.0403; 0.0091] | beta voice = 0.0130 [0.0011; 0.0265] (beta < 0 = menos ineficiência) | significativos: gov, voice, ln_gdppc, npl, tend
+dea.env.robust T linear (4s): sigma = 735.17 → INSTÁVEL (delta com cauda pesada; usar a versão em log) | beta manuf_pib = -482.347 [-1118.672; -823.824]
+SW alg. 2 em log(delta) T (6s, 500/500 réplicas ok): sigma 1.46 | beta manuf_pib = -0.0965 [-0.1528; -0.0306] | beta voice = 0.0449 [0.0128; 0.0826] (beta < 0 = menos ineficiência) | significativos: manuf_pib, manuf_exp, voice, z_score, zero_inv
+dea.env.robust C linear (4s): sigma = 331.20 → INSTÁVEL (delta com cauda pesada; usar a versão em log) | beta manuf_pib = -170.947 [-482.068; -308.253]
+SW alg. 2 em log(delta) C (6s, 500/500 réplicas ok): sigma 1.35 | beta manuf_pib = -0.0853 [-0.1534; -0.0303] | beta voice = 0.0469 [0.0191; 0.0786] (beta < 0 = menos ineficiência) | significativos: manuf_pib, manuf_exp, voice, ln_gdppc, trade, z_score, zero_inv
+=== Fim: 0.9 min | erros: 0 (ver resultados/log_erros.txt) ===

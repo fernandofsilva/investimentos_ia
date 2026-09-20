@@ -1,0 +1,6 @@
+shift US$   1 mi | CCR médio dos 17 zeros 0.791 | eficientes 58.8%
+shift US$  10 mi | CCR médio dos 17 zeros 0.585 | eficientes 23.5%
+shift US$ 100 mi | CCR médio dos 17 zeros 0.319 | eficientes 5.9%
+menor investimento positivo: US$ 1 mi | mediana: US$ 89,6 mi
+max |BCC(shift 1 mi) - BCC(shift 100 mi)| = 2.2e-15 
+Spearman(ST agrupada com os zeros, sem os zeros) = 0.988 
