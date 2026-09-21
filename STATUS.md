@@ -11,7 +11,7 @@ Atualizado em 20/09/2026. Este arquivo resume o estado da pesquisa: pergunta, ba
 | Disciplina | Introdução à Análise de Eficiência em R, Prof. Peter Wanke, Escola de Métodos |
 | Autor | Fernando Silva |
 | Avaliação | Manuscrito submetido a periódico Qualis até o lançamento das notas, mais apresentação de 20 minutos com diagnóstico setorial |
-| Datas | Último laboratório supervisionado em 21/09/2026; apresentação em 28/09/2026 |
+| Datas | Prévia dos resultados para o professor e último laboratório supervisionado em 21/09/2026; apresentação em 28/09/2026 |
 | Exigência do Syllabus | Replicar as análises das sessões numa base própria, com rotinas reprodutíveis: FDH, CCR/BCC, folgas, fusões, Malmquist, TOPSIS, bootstrap, SFA, Order-m/α, classes latentes, contextuais, testes não paramétricos, Tobit e regressão truncada bootstrap |
 | Página do relatório | https://claude.ai/artifact/2CjsDUS3gwjvx7FXyQvtM1 (privada; editável na própria página; qualquer republicação a partir do repositório sobrescreve edições feitas lá) |
 
@@ -42,15 +42,17 @@ Os quatro modelos compartilham a mesma fronteira única com as 208 observações
 - `dados/wdi_contextuais.csv` (World Bank, gerado por `dados/baixar_wdi.sh`): manufatura % PIB, indústria % PIB, manufaturados % das exportações, pesquisadores por milhão, P&D % PIB (conferência) e deflator do PIB dos EUA.
 - `dados/wgi.voice_accountability.csv`: Voice & Accountability do WGI em escala 0–100. Não é o percentil do WGI (Noruega 90, China 31); parece reescala linear do *estimate*. Fonte exata a documentar.
 
+Antes de estimar qualquer fronteira, cada coluna foi confrontada com um fato externo que só é compatível com uma das leituras possíveis, porque a base veio sem dicionário de dados e os nomes das colunas não dizem a unidade. O código desses testes está em `scripts/relatorio/E01_base.R` e a conferência de rotina, no bloco 1 de `scripts/pipeline_v3.R` (log em `resultados/resumo_v3.txt`). Duas variáveis decidiram todo o desenho: publicações e patentes são os produtos dos modelos S e T e estavam em dimensões diferentes, de modo que qualquer comparação entre os dois escores media, em boa parte, população.
+
 Diagnósticos que condicionaram toda a modelagem:
 
 | Achado | Evidência | Consequência |
 |---|---|---|
-| `AI.Patent.Applications` é patentes **por milhão de habitantes** | China 59,9 e Luxemburgo 59,3 em 2021; multiplicada pela população, 58 % das observações viram inteiros | A contagem é recuperada como per capita × população; misturar com publicações em contagem gera artefato de tamanho |
-| `AI.Publications` é contagem absoluta | Correlação 0,71 com log da população | Idem |
+| `AI.Patent.Applications` é patentes **por milhão de habitantes** | China 59,9 e Luxemburgo 59,3 em 2021 (impossível em contagem: Luxemburgo tem 600 mil habitantes); multiplicada pela população, 58 % das observações caem a menos de 0,02 de um inteiro, contra 4 % esperados ao acaso; correlação −0,03 com o log da população | A contagem é recuperada como per capita × população; misturar com publicações em contagem gera artefato de tamanho |
+| `AI.Publications` é contagem absoluta | Correlação 0,71 com o log da população, comportamento de contagem e não de taxa | Idem; é a origem do artefato de tamanho que derrubou o achado da v2 (gap T − S com correlação −0,53 com o log da população) |
 | 17 zeros em `AI.Investment` | Menor valor positivo é exatamente US$ 1.000.000 (fonte arredonda a milhões) | Zero pode ser "menos de meio milhão"; tratado com deslocamento de US$ 0,5 mi e robustez sem os zeros |
-| Patentes de 2020–2021 truncadas | Em 2021, 64 % dos países caem em relação a 2020 (EUA 0,56×, Japão 0,70×) enquanto publicações sobem | Sensibilidade com o modelo T restrito até 2019 |
-| Colunas `log_*` são `log1p`, não `log` | Diferença máxima 7e-10 para `log1p` | As aplicadas a razões pequenas são iguais ao nível; não usar |
+| Patentes de 2020–2021 truncadas | Em 2021, 64 % dos países caem em relação a 2020 (EUA 0,56×, Japão 0,70×) enquanto as publicações sobem (razão mediana 1,14), padrão de truncamento à direita por defasagem de publicação dos pedidos | Sensibilidade com o modelo T restrito até 2019 (Spearman 0,99 com o escore principal) |
+| Colunas `log_*` são `log1p`, não `log` | Diferença máxima 7,4e-10 para `log1p` | As aplicadas a razões pequenas são iguais ao nível; não usar |
 | Corrupção × efetividade do governo | Correlação 0,95 | Combinadas num índice único de governança |
 | `IncomeLevel` com quatro grafias | 101/21/9/9 observações da mesma categoria | Padronizada em três níveis |
 | Países que patenteiam via EPO/PCT aparecem com patentes de IA quase nulas | Suíça 0,002, Irlanda 0,004, Holanda 0,005 no modelo C | Sugere contagem por escritório nacional; pendência de dados mais importante |
@@ -83,7 +85,7 @@ Diagnósticos que condicionaram toda a modelagem:
 
 ### Padronização e relatório (20/09)
 - `scripts/pipeline_v3.R` e os trechos do relatório seguem o Google R Style Guide; saídas byte a byte idênticas às anteriores, exceto uma correlação do log de execução, que comparava países em ordens diferentes e foi corrigida (0,33 → −0,253; o número não aparecia em nenhum documento).
-- `documentos/relatorio_professor.md` e a página publicada narram o percurso em terceira pessoa, com código, saída, diagnóstico e melhoria incorporada em cada etapa.
+- `documentos/relatorio_professor.md` e a página publicada narram o percurso em terceira pessoa, com código, saída, diagnóstico e melhoria incorporada em cada etapa. A seção sobre o que a base mede saiu do relatório em 20/09 e passou a viver na seção 3 deste arquivo; o trecho de R que a sustentava (`scripts/relatorio/E01_base.R`) continua rodando em `run_prints.R` e mantém os números reprodutíveis, ainda que não apareça mais no documento.
 
 ---
 
@@ -179,6 +181,8 @@ T, C e ST são estáveis; S não é robusto entre sistemas de unidades.
 ---
 
 ## 8. Pendências e decisões em aberto
+
+Os pontos a levar à prévia de 21/09, com o que cada resposta mudaria, estão na seção 12 de `documentos/relatorio_professor.md` (e na página). Os três de maior alcance: a definição da variável de patentes, o modelo C como estágio único ou DEA em rede, e o estimador do segundo estágio no manuscrito.
 
 1. **Patentes (prioridade máxima).** Confirmar na fonte a definição de `AI.Patent.Applications` (inventor × depositante, escritório) e obter uma série por país do inventor (OECD.AI, WIPO); reestimar T, C e H1. Decidir o tratamento dos 13 países de patente quase nula.
 2. **Voice & Accountability.** Documentar escala e fonte do arquivo.

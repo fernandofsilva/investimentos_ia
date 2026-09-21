@@ -15,10 +15,10 @@ O bloco marcado **R** é o código que rodou; o bloco **saída** é o que o cons
 O desenho adotado é o seguinte: insumos = investimento em IA e P&D; produtos = publicações e patentes de IA; CCR e BCC para ter o contrafactual de retornos de escala; um segundo estágio com contextuais, com uma proxy de base industrial; zeros mantidos com um deslocamento; painel desbalanceado.
 
 - **H1.** Países com maior participação da manufatura no PIB são mais eficientes em produzir patentes (modelo T) e em converter pesquisa em patente (modelo C).
-- **H2.** A base industrial importa menos para a eficiência científica (modelo S) do que para a tecnológica: a assimetria ciência–tecnologia é institucional, não de volume.
-- **Exploratórias.** Qualidade institucional e solidez financeira afetam a eficiência; a fronteira se deslocou com a explosão do investimento (Malmquist).
+- **H2.** A base industrial importa menos para a eficiência científica (modelo S) do que para a tecnológica: a assimetria ciência–tecnologia é sistêmica, não de volume.
+- **Exploratórias.** Qualidade institucional e solidez financeira afetam a eficiência; a fronteira se deslocou com o aumento do investimento (Malmquist).
 
-Quatro modelos de fronteira aparecem daqui em diante e vale fixá-los agora. Todos usam a mesma fronteira única com as 208 observações país-ano, orientada a produto, estimada em CCR e BCC; o que muda entre eles é só o que entra como insumo e como produto.
+Quatro modelos de fronteira e todos usam a mesma fronteira única com as 208 observações país-ano, orientada a produto, estimada em CCR e BCC; o que muda entre eles é só o que entra como insumo e como produto.
 
 | Modelo | Insumos | Produto | Pergunta que responde |
 |---|---|---|---|
@@ -27,7 +27,7 @@ Quatro modelos de fronteira aparecem daqui em diante e vale fixá-los agora. Tod
 | **ST**, síntese | investimento em IA, P&D | publicações e patentes | os dois produtos na mesma fronteira |
 | **C**, conversão | publicações, investimento em IA, P&D | patentes | quantas patentes saem dado o dinheiro e a ciência já produzida |
 
-Tudo em dólares de 2015 e em contagem. O modelo C é o que testa diretamente a hipótese sobre pesquisa que vira patente: ele coloca as publicações do lado dos insumos, e por isso substitui a diferença entre dois escores que a v2 propunha como variável dependente.
+Tudo em dólares com base o ano 2015 (corrigida inflação) e em contagem. O modelo C é o que testa diretamente a hipótese sobre pesquisa que vira patente: ele coloca as publicações do lado dos insumos, e por isso substitui a diferença entre dois escores que a v2 propunha como variável dependente.
 
 O que contaria como resposta: H1 respondida se o coeficiente da manufatura no segundo estágio for positivo sobre o escore de patentes e sobrevivesse a mudanças de unidades, de estimador e de amostra. H2 respondida se o mesmo coeficiente fosse fraco ou nulo sobre o escore de publicações. Os instrumentos da disciplina entram assim: FDH, CCR e BCC para as fronteiras; folgas, supereficiência e Order-m para os outliers; bootstrap para os intervalos; SFA como contraparte paramétrica; Malmquist para a dinâmica; fusões e TOPSIS como leituras complementares; Tobit e regressão truncada bootstrap para o segundo estágio.
 
@@ -83,63 +83,9 @@ Spearman <- function(a, b) {
 
 ---
 
-## 2. Primeiro passo: entender o que a base mede
+## 2. Segunda proposta
 
-Antes de estimar qualquer fronteira, cada coluna da base foi testada para saber o que de fato mede. Duas variáveis decidiram tudo o que veio depois.
-
-```r
-# O que a base mede? As patentes per capita viram inteiros quando
-# multiplicadas pela população?
-dados %>%
-  filter(Year == 2021) %>%
-  arrange(desc(AI.Patent.Applications)) %>%
-  slice(1:4) %>%
-  transmute(Country,
-            pat_pm = round(AI.Patent.Applications, 1),
-            pop_mi = round(pop_mi, 1),
-            pat_cnt = round(pat),
-            pubs = AI.Publications)
-fracao <- dados$pat %% 1
-cat("contagens a menos de 0,02 de um inteiro:",
-    round(100 * mean(pmin(fracao, 1 - fracao) < 0.02)),
-    "% (esperado ao acaso: 4%)\n")
-cat("cor(log publicações, log população) =",
-    round(cor(log(dados$AI.Publications), log(dados$pop_mi)), 2),
-    "| cor(log patentes per capita, log população) =",
-    round(cor(log(dados$AI.Patent.Applications), log(dados$pop_mi)), 2), "\n")
-cat("zeros em AI.Investment:", sum(dados$zero_inv),
-    "| menor valor positivo: US$",
-    formatC(min(dados$AI.Investment[dados$AI.Investment > 0]),
-            format = "d", big.mark = ".", decimal.mark = ","), "\n")
-cat("colunas log_* são log1p? max|log_RD_Percentage - log1p(R.D_Percentage)| =",
-    signif(max(abs(dados$log_RD_Percentage -
-                     log1p(dados$R.D_Percentage))), 2), "\n")
-```
-
-```text
-# A tibble: 4 × 5
-  Country       pat_pm pop_mi pat_cnt  pubs
-  <chr>          <dbl>  <dbl>   <dbl> <dbl>
-1 China           59.9 1412.    84611 77180
-2 Luxembourg      59.3    0.6      38   248
-3 Japan           23.6  126.     2964  9556
-4 United States   20.9  332      6945 49289
-contagens a menos de 0,02 de um inteiro: 58 % (esperado ao acaso: 4%)
-cor(log publicações, log população) = 0.71 | cor(log patentes per capita, log população) = -0.03 
-zeros em AI.Investment: 17 | menor valor positivo: US$ 1.000.000 
-colunas log_* são log1p? max|log_RD_Percentage - log1p(R.D_Percentage)| = 7.4e-10 
-```
-
-
-> **Diagnóstico.** `AI.Patent.Applications` é patentes **por milhão de habitantes** (China 59,9 e Luxemburgo 59,3 no mesmo ano só fazem sentido per capita; multiplicada pela população, 58 % das observações viram inteiros). `AI.Publications` é **contagem absoluta** (correlação 0,71 com a população). Os 17 zeros de investimento aparecem numa fonte que arredonda a milhões, então "zero" pode ser "menos de meio milhão". E as colunas `log_*` da base são `log1p`, não `log`: as que se aplicam a razões pequenas são iguais ao nível.
-
-A série de patentes também mostra um segundo problema: em 2020 e 2021 ela cai em 64 % dos países enquanto as publicações continuam subindo, o padrão típico de truncamento à direita por defasagem de publicação dos pedidos. O modelo de patentes nos anos finais precisa de uma sensibilidade que pare em 2019.
-
----
-
-## 3. A primeira proposta e o resultado que parecia bom demais
-
-A v2 usava as variáveis previstas no desenho, mas com unidades mistas: investimento em dólares, P&D em % do PIB, publicações em contagem e patentes per capita, com uma fronteira por ano. A ideia era comparar o escore científico (S) com o tecnológico (T) e explicar a diferença.
+A v2 usava as variáveis previstas, mas com unidades mistas, do jeito que saem da base: investimento em dólares, P&D em % do PIB, publicações em contagem e patentes por milhão de habitantes, com uma fronteira por ano. A ideia era comparar o escore científico (S) com o tecnológico (T) e explicar a diferença.
 
 ```r
 # Especificação da v2: fronteiras anuais; insumos = investimento em US$ bi
@@ -180,7 +126,7 @@ log_pibpc      0.060      0.063   0.961    0.344
 ```
 
 
-O resultado era vendável: "o Brasil converte investimento em artigo, não em patente", com Índia, Itália, Polônia e Espanha na mesma lista e Luxemburgo e Singapura do outro lado.
+O resultado: "o Brasil converte investimento em artigo, não em patente", com Índia, Itália, Polônia e Espanha na mesma lista e Luxemburgo e Singapura do outro lado.
 
 > **Diagnóstico.** O gap entre T e S tem correlação −0,53 com o log da população, e na regressão só a população explica o gap (coeficiente −0,105, p = 0,013; PIB per capita não). O modelo S, em contagem, premia países grandes; o modelo T, per capita, premia países pequenos e ricos. A "lista dos que publicam e não patenteiam" era, em boa parte, a lista dos países populosos.
 
@@ -230,13 +176,13 @@ Spearman do escore T: v2 × per capita = 0.902 | v2 × contagem = 0.751
 ```
 
 
-> **Melhoria incorporada.** Tudo per capita ou tudo em contagem. O Brasil sai de −0,57 para 0,04 (per capita) ou −0,31 (contagem, meio da tabela); a Índia sai de −0,93 para −0,07 ou −0,75. O ranking científico da v2 não tem relação com o ranking per capita (Spearman 0,11). A forma em contagem e dólares passou a ser a principal, por ser a leitura literal da pergunta de pesquisa, isto é, o que se investe contra o quanto se gera; a forma per capita ficou como robustez. Nenhuma conclusão sobre o escore científico pode depender de uma única forma, e o relatório registra isso.
+> **Melhoria incorporada.** Tudo per capita ou tudo em contagem. O Brasil sai de −0,57 para 0,04 (per capita) ou −0,31 (contagem, meio da tabela); a Índia sai de −0,93 para −0,07 ou −0,75. O ranking científico da v2 não tem relação com o ranking per capita (Spearman 0,11). A forma em contagem e dólares passou a ser a principal, por ser a leitura literal da pergunta de pesquisa, isto é, o que se investe contra o quanto se gera; a forma per capita ficou como robustez.
 
 ---
 
-## 4. Fronteira por ano ou fronteira agrupada?
+## 3. Fronteira por ano ou fronteira agrupada?
 
-O template da disciplina coloca as 115 companhia-ano numa única fronteira. A v2 fazia uma fronteira por ano, com 16 a 30 países.
+Na disciplina coloca as 115 companhia-ano numa única fronteira. A v2 fazia uma fronteira por ano, com 16 a 30 países.
 
 ```r
 # Fronteiras anuais (16 a 30 DMUs) contra fronteira agrupada (208 DMUs),
@@ -266,7 +212,7 @@ Spearman(anual, agrupada) = 0.844
 
 > **Diagnóstico.** Com fronteiras anuais, 36 % das DMUs são eficientes e o escore médio sobe justamente nos anos com menos países (0,80 em 2021, com n = 16). O escore acompanhava o tamanho da amostra. Na fronteira agrupada, 9 % são eficientes e os rankings mudam de forma moderada (Spearman 0,84).
 
-> **Melhoria incorporada.** Fronteira agrupada com as 208 observações como desenho principal, como na aula, com o ano como contextual; as fronteiras anuais viram robustez. O Malmquist cuida do deslocamento da fronteira (seção 9).
+> **Melhoria incorporada.** Fronteira agrupada com as 208 observações como desenho principal, como na aula, com o ano como contextual; as fronteiras anuais viram robustez. O Malmquist cuida do deslocamento da fronteira (seção 8).
 
 ![Fronteiras FDH, CRS e VRS em um insumo e um produto, e os eficientes VRS em escala log](../resultados/figuras/fig02_fronteira_2d.png)
 
@@ -274,7 +220,7 @@ Spearman(anual, agrupada) = 0.844
 
 ---
 
-## 5. Os zeros e o tamanho do deslocamento
+## 4. Os zeros e o tamanho do deslocamento
 
 A v2 manteve os 17 zeros de investimento somando uma constante ao insumo, testou três magnitudes e concluiu que o CCR era "brutalmente sensível" ao deslocamento.
 
@@ -324,7 +270,7 @@ Spearman(ST agrupada com os zeros, sem os zeros) = 0.988
 
 ---
 
-## 6. O núcleo da v3 e o que ele mostra
+## 5. O núcleo da v3 e o que ele mostra
 
 Com unidades consistentes e fronteira agrupada, o trabalho estima quatro modelos: **S** (investimento, P&D → publicações), **T** (→ patentes), **ST** (→ ambos) e **C** (publicações, investimento, P&D → patentes), este último o teste direto da hipótese sobre pesquisa que vira patente.
 
@@ -339,15 +285,15 @@ Três coisas saltam da leitura dos escores por país (tabela `t03_medias_pais.cs
 
 - **Quem está na fronteira.** Em S: Austrália-2013, China (2013, 2019–2021), Índia (2013, 2016, 2019, 2020), Malásia-2014, Peru (2018, 2021), Romênia (2018, 2020), Ucrânia (2017, 2018). Em T: Austrália-2013, China (2013, 2020, 2021), México-2018, Peru-2018, Ucrânia-2014. Peru, Ucrânia, Malásia e Romênia entram por terem insumos minúsculos; a supereficiência CRS confirma (Ucrânia-2014 1,81; Malásia-2014 1,78). Israel, com o maior investimento por habitante, é o menos eficiente em ST (0,11). O modelo mede publicações e patentes por dólar de capital de risco e de P&D, e onde há muito capital de risco essa razão é naturalmente baixa. Isso fica registrado no artigo.
 - **O Brasil** fica em 10º de 37 na conversão pesquisa → patente (0,19) e em 0,36 na síntese ST. Nada de "publica e não patenteia".
-- **Os últimos da conversão** são Suíça, Irlanda, Holanda, Bélgica, Noruega e Israel, com patentes de IA quase nulas. São exatamente os países que patenteiam via EPO/PCT. Isso sugere que a variável conta pedidos em escritórios nacionais, e é a pendência de dados mais importante do trabalho, retomada nas seções 10 e 11.
+- **Os últimos da conversão** são Suíça, Irlanda, Holanda, Bélgica, Noruega e Israel, com patentes de IA quase nulas. São exatamente os países que patenteiam via EPO/PCT. Isso sugere que a variável conta pedidos em escritórios nacionais, e é a pendência de dados mais importante do trabalho, retomada nas seções 9 e 10.
 
 ![Eficiência de conversão pesquisa → patente por país, colorida pela participação da manufatura no PIB](../resultados/figuras/fig11_conversao_pais.png)
 
-Robustez do núcleo (Spearman com o escore principal): forma per capita 0,12 para S, 0,90 para T e 0,94 para C; fronteiras anuais 0,84; deslocamento de 1 milhão 1,00; sem os zeros 0,99; patentes só até 2019 0,99; sem Luxemburgo e Singapura 1,00; insumos defasados em um ano 0,89. T e C são estáveis; S não é.
+Robustez do núcleo (Spearman com o escore principal): forma per capita 0,12 para S, 0,90 para T e 0,94 para C; fronteiras anuais 0,84; deslocamento de 1 milhão 1,00; sem os zeros 0,99; patentes só até 2019, pelo truncamento à direita da série nos anos finais, 0,99; sem Luxemburgo e Singapura 1,00; insumos defasados em um ano 0,89. T e C são estáveis; S não é.
 
 ---
 
-## 7. Bootstrap: quando o pacote devolve escores negativos
+## 6. Bootstrap: quando o pacote devolve escores negativos
 
 O bootstrap de Simar-Wilson foi estimado exatamente como na Lecture 03.
 
@@ -388,7 +334,7 @@ negativos: 0 | Spearman com o escore original: 0.999
 
 ---
 
-## 8. Segundo estágio: do gap em OLS ao Algoritmo 2 em log(δ)
+## 7. Segundo estágio: do gap em OLS ao Algoritmo 2 em log(δ)
 
 A v2 propunha regredir o gap T − S por OLS com vinte parâmetros para 37 países. Essa escolha foi abandonada por três razões: não é o segundo estágio da aula (Tobit e `dea.env.robust`), a diferença de dois escores limitados e dependentes herda os problemas dos dois, e a variável "anos desde o primeiro investimento" media apenas "anos na amostra" (em 28 dos 36 países o primeiro ano positivo é o primeiro ano observado).
 
@@ -493,7 +439,7 @@ No Tobit (`censReg`, como na aula) e no OLS com erros agrupados por país, sem a
 
 ---
 
-## 9. O que mais o template mostrou
+## 8. O que mais o template mostrou
 
 ```r
 # SFA como na aula (Benchmarking::sfa), Cobb-Douglas em log: modelo S
@@ -568,7 +514,7 @@ Fusões como blocos regionais (Mercosul, Aliança do Pacífico, Benelux, Ibéria
 
 ---
 
-## 10. A reviravolta: Voice & Accountability
+## 9. A reviravolta: Voice & Accountability
 
 O desenho previa três variáveis institucionais: controle de corrupção, efetividade do governo e voz e responsabilização. As duas primeiras já estavam na base e têm correlação 0,95 entre si, por isso foram combinadas num índice único; Voice & Accountability foi acrescentada em 20/09, a partir de arquivo do WGI.
 
@@ -631,7 +577,7 @@ voice: Tobit -0.0075 (p 0.00058 ) | voice médio: 13 países 78 vs demais 64 | C
 
 ---
 
-## 11. Situação atual
+## 10. Situação atual
 
 | Pergunta ou hipótese | Situação | Evidência |
 |---|---|---|
@@ -645,7 +591,7 @@ Pendências de dados, em ordem de importância: (1) definição de `AI.Patent.Ap
 
 ---
 
-## 12. Decisões em aberto
+## 11. Decisões em aberto
 
 As melhorias das seções anteriores já estão incorporadas ao trabalho. Restam seis decisões, que dependem de discussão antes da apresentação e da submissão.
 
@@ -655,6 +601,39 @@ As melhorias das seções anteriores já estão incorporadas ao trabalho. Restam
 4. **Manufatura × voice.** Definir entre reportar os dois conjuntos de contextuais lado a lado, com e sem voice, apresentando H1 como frágil, e construir um índice institucional único.
 5. **Deck de 28/09.** Doze slides seguindo o template da disciplina (fronteiras, folgas, fusões, Malmquist, TOPSIS, bootstrap, SFA, Order-m, classes latentes, testes, Tobit, truncada bootstrap), com o diagnóstico setorial nos dois últimos. Falta definir se alguma técnica merece mais tempo.
 6. **Periódico.** Socio-Economic Planning Sciences, Technological Forecasting & Social Change ou Journal of the Knowledge Economy. Falta escrever o parágrafo que justifica o uso de fronteira em lugar de modelos de mediação e moderação, e localizar o trabalho do grupo com esta mesma base (Fukuyama, Tan & Wanke, 2025, e o estudo econométrico correlato) para posicionar a contribuição.
+
+---
+
+## 12. Pontos a validar com o professor
+
+A prévia dos resultados de 21/09 é a ocasião de submeter, a quem tem experiência com o método e com esta base, as escolhas em que ainda há dúvida sobre o caminho. Diferentemente da seção anterior, que lista decisões, esta reúne perguntas: em cada uma, o que foi feito, onde está a dúvida e o que a resposta mudaria. Dentro de cada bloco, os pontos estão em ordem decrescente de impacto sobre o trabalho.
+
+### Sobre os dados
+
+- **A variável de patentes.** O trabalho inferiu, por testes internos, que `AI.Patent.Applications` é por milhão de habitantes e que conta depósitos em escritórios nacionais, o que zera países que patenteiam via EPO e PCT (Suíça, Holanda, Irlanda, Bélgica, Noruega, Israel e outros sete). O grupo do professor já trabalhou com esta base (Fukuyama, Tan & Wanke, 2025). A dúvida é de fonte: qual a definição exata (país do inventor ou do depositante; escritório), como esses países foram tratados nesse trabalho e se existe uma série alternativa já usada pelo grupo (OECD.AI, WIPO). A resposta decide o tratamento dos 13 países e, com ele, o veredito sobre H1; nenhuma outra pendência tem esse alcance.
+- **O investimento e os zeros.** O trabalho inferiu que a fonte arredonda a milhões (o menor valor positivo é exatamente US\$ 1.000.000) e que zero pode significar "menos de meio milhão", em linha com a leitura de fenômeno recente feita na orientação. O tratamento adotado foi um deslocamento de metade do menor valor positivo, com robustez sem os zeros (Spearman 0,99). A dúvida: se a fonte é conhecida (AI Index, Quid), se os valores são correntes e se o deslocamento é preferível à normalização mín–máx mencionada na orientação. Como o BCC orientado a produto é invariante a translações, a resposta afeta só o CCR e a eficiência de escala.
+- **Voice & Accountability.** O arquivo está numa escala 0–100 que não corresponde ao percentil do WGI (Noruega 90, China 31), e a fonte exata ainda não está documentada. Uma conclusão central depende dessa variável. A dúvida é se o grupo dispõe da série original do WGI e se a escala usada altera a leitura.
+
+### Sobre o desenho da fronteira
+
+- **Modelo C como estágio único ou DEA em rede.** O modelo C coloca as publicações do lado dos insumos das patentes. É uma forma de comprimir num único DEA o que seria uma rede de dois estágios (investimento e P&D → publicações → patentes). A dúvida: se o modelo C é defensível como está num manuscrito ou se a versão correta é o DEA em rede, como nos trabalhos vistos nas sessões iniciais. A resposta muda a peça central do argumento e qual escore o segundo estágio explica.
+- **Fronteira agrupada em nove anos com uma fronteira que recua.** O template agrupa o painel inteiro; aqui a fronteira de publicações por dólar recuou 11 % entre 2016 e 2021 (componente de deslocamento do Malmquist 0,891) enquanto o investimento mediano se multiplicou por 27. A dúvida tem duas partes: se a fronteira agrupada de 2013 a 2021 é adequada quando a tecnologia se move tanto, ou se o desenho deveria ser sequencial ou em janela (que impede regresso técnico por construção); e se a leitura do recuo como defasagem entre investimento e produção é aceitável, ou se ele aponta um problema de desenho. Muda a especificação principal e o slide de dinâmica.
+- **Defasagens.** A literatura de sistemas de inovação espera investimento em t, publicações em t+1 e patentes em t+2. A especificação principal é contemporânea; a defasada de um ano entra como robustez (154 pares, Spearman 0,89). A dúvida é se a defasada deveria ser a principal, mesmo perdendo um quarto das observações, ou se contemporânea com robustez basta.
+- **O escore científico que não é robusto.** O modelo S muda de ranking entre a forma em contagem e a per capita (Spearman 0,12), o SFA não identifica ineficiência nele (λ < 0) e as classes latentes separam sistemas grandes de pequenos. Três caminhos: manter S e reportar a instabilidade; tirar S do manuscrito e ficar com T, C e ST; ou tratar S por classes, com uma metafronteira. A opinião de quem publica com DEA sobre o que um parecerista aceita decide.
+- **Os outliers de insumo minúsculo.** Peru, Ucrânia, Malásia e Romênia definem a fronteira com insumos ínfimos; a supereficiência confirma (Ucrânia-2014 1,84; Malásia-2014 1,82) e o Order-m os reclassifica. A dúvida: excluir (Wilson, 1993), manter com a fronteira parcial como resultado principal, ou manter e reportar. Muda o topo do ranking e o diagnóstico setorial.
+
+### Sobre o segundo estágio
+
+- **O estimador do manuscrito.** A regressão truncada linear do `rDEA` não se sustenta nos modelos de patentes (σ̂ = 720); a versão em log(δ) é implementação própria. A dúvida: se um periódico aceita a reimplementação como estimador principal, ou se o caminho seguro é Tobit como principal com a regressão truncada restrita ao modelo S. E como tratar, no Algoritmo 2, a dependência entre os anos de um mesmo país, que o procedimento original não prevê: a orientação apontou que o segundo estágio seria de efeito aleatório, e o trabalho hoje reporta OLS com erros agrupados por país ao lado.
+- **Manufatura, voice e o índice institucional.** As duas têm correlação −0,60 e não se separam nesta amostra; voice entra com sinal negativo sobre a eficiência. A orientação previa que voice poderia empurrar em qualquer direção; a dúvida é se este sinal, nesta magnitude, é ruído, artefato do escritório de patentes ou uma explicação substantiva que o trabalho não está vendo. E, na forma de reportar: os dois conjuntos de contextuais lado a lado, como está, ou um índice institucional único.
+- **Separabilidade.** O segundo estágio pressupõe que as contextuais não alteram a forma da fronteira, só a distância a ela (Daraio, Simar & Wilson, 2018). A hipótese é pouco plausível para a manufatura, que pode deslocar a própria fronteira de patentes, e não há teste na disciplina. A dúvida é se basta discutir como limitação ou se o grupo usa algum teste, ou o Order-m condicional, em publicações recentes.
+
+### Sobre o manuscrito e a apresentação
+
+- **Escopo e periódico.** O Syllabus manda replicar todas as técnicas; no manuscrito, quais ficam. E o periódico: SEPS, Technological Forecasting & Social Change ou Journal of the Knowledge Economy. A orientação mencionou que o grupo já explorou esta base "tudo econometria" e que há periódicos que preferem mediação e moderação a DEA; a dúvida é qual é esse trabalho, como posicionar a contribuição sem sobrepor Fukuyama, Tan & Wanke (2025), e como justificar a escolha pela fronteira.
+- **O diagnóstico setorial do deck.** O Syllabus pede diagnóstico setorial nos slides finais. A dúvida é de recorte: o Brasil (10º de 37 na conversão, 0,36 na síntese) ou o sistema de IA como um todo (fronteira recuando, países EPO fora do mapa de patentes); e quanto dos vinte minutos dedicar às técnicas em relação ao diagnóstico.
+
+Se houver tempo para poucos pontos, os que mais mudam o trabalho são a variável de patentes, o modelo C como estágio único ou rede, e o estimador do segundo estágio; os demais podem esperar a submissão.
 
 ---
 
