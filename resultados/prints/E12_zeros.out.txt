@@ -1,0 +1,5 @@
+observações sem investimento: 17 de 208 | eficientes em C: Luxembourg-2016, Peru-2018, Ukraine-2014 
+menor P&D entre elas: Peru-2018 com US$ 267 milhões e escore 1 
+top 6 com todos os anos: China 0.63, Australia 0.54, Peru 0.53, Ukraine 0.49, Japan 0.46, Mexico 0.44 
+top 6 só com anos de investimento positivo: China 0.63, Australia 0.54, Japan 0.46, Mexico 0.44, Peru 0.37, United States 0.23 
+países com menos de 3 anos observados: Slovenia, Philippines, Indonesia, Italy, Ireland, Switzerland 

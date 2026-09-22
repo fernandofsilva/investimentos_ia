@@ -1,0 +1,11 @@
+variavel,n_na,paises_na,usada_2o_estagio
+manuf_pib,3,Bulgaria,TRUE
+manuf_exp,0,,TRUE
+gov,0,,TRUE
+voice,0,,TRUE
+ln_gdppc,0,,TRUE
+trade,0,,TRUE
+z_score,0,,TRUE
+npl,0,,TRUE
+pesq_pm,31,"Australia, Brazil, Colombia, India, Indonesia, Israel, Peru, United Kingdom",FALSE
+artigos_se_nsf,0,,FALSE

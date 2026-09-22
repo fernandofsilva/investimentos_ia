@@ -15,7 +15,7 @@ O bloco marcado **R** é o código que rodou; o bloco **saída** é o que o cons
 O desenho adotado é o seguinte: insumos = investimento em IA e P&D; produtos = publicações e patentes de IA; CCR e BCC para ter o contrafactual de retornos de escala; um segundo estágio com contextuais, com uma proxy de base industrial; zeros mantidos com um deslocamento; painel desbalanceado.
 
 - **H1.** Países com maior participação da manufatura no PIB são mais eficientes em produzir patentes (modelo T) e em converter pesquisa em patente (modelo C).
-- **H2.** A base industrial importa menos para a eficiência científica (modelo S) do que para a tecnológica: a assimetria ciência–tecnologia é sistêmica, não de volume.
+- **H2.** A base industrial tem menor impacto na eficiência científica (modelo S) do que para a tecnológica.
 - **Exploratórias.** Qualidade institucional e solidez financeira afetam a eficiência; a fronteira se deslocou com o aumento do investimento (Malmquist).
 
 Quatro modelos de fronteira e todos usam a mesma fronteira única com as 208 observações país-ano, orientada a produto, estimada em CCR e BCC; o que muda entre eles é só o que entra como insumo e como produto.
@@ -214,6 +214,8 @@ Spearman(anual, agrupada) = 0.844
 
 > **Melhoria incorporada.** Fronteira agrupada com as 208 observações como desenho principal, como na aula, com o ano como contextual; as fronteiras anuais viram robustez. O Malmquist cuida do deslocamento da fronteira (seção 8).
 
+> **Leitura revisada.** A escolha deixou de ser justificada só pelo template. Com o painel desbalanceado, a fronteira agrupada é a fronteira global ou intertemporal, que envolve as fronteiras contemporâneas de cada ano, e as fronteiras anuais são as fronteiras de grupo de uma metafronteira. A seção 10 desenvolve essa leitura e extrai dela a lacuna tecnológica e um índice de Malmquist que não exige painel balanceado.
+
 ![Fronteiras FDH, CRS e VRS em um insumo e um produto, e os eficientes VRS em escala log](../resultados/figuras/fig02_fronteira_2d.png)
 
 ![Distribuição dos escores por método e por modelo na fronteira agrupada](../resultados/figuras/fig04_boxplot_metodos.png)
@@ -268,6 +270,59 @@ Spearman(ST agrupada com os zeros, sem os zeros) = 0.988
 
 > **Melhoria incorporada.** Deslocamento de US\$ 0,5 milhão (metade do menor valor positivo), robustez com a amostra sem os zeros (Spearman 0,988 com a amostra completa) e eficiência de escala reportada só para as observações com investimento positivo, porque sob CCR ela é indefinida para os zeros. A dummy de zero entra no segundo estágio.
 
+> **Leitura revisada.** O trabalho tratava o zero como possivelmente inferior a meio milhão de dólares, porque o menor valor positivo da base é exatamente um milhão. Essa leitura foi abandonada: o zero é a informação de que não houve investimento privado registrado, e a célula em branco é que seria ausência de informação. Como o modelo BCC orientado a produto é invariante a translações do insumo, os escores principais já são os de "zero é zero", e o deslocamento permanece apenas como artifício computacional das técnicas que tomam o logaritmo do insumo. O que muda é a interpretação, no trecho seguinte.
+
+```r
+# Quem define a fronteira entre as observações sem investimento: sob VRS
+# orientado a produto, uma DMU com insumo zero só pode ser dominada por
+# outras com insumo zero.
+sem.investimento <- which(dados$zero_inv)
+y.patentes <- as.matrix(dados[, "pat", drop = FALSE])
+escore.c <- Escore(dea(as.matrix(dados[, c("pubs", "inv_usd", "rd_usd")]),
+                       y.patentes, RTS = "vrs", ORIENTATION = "out"))
+cat("observações sem investimento:", length(sem.investimento), "de",
+    nrow(dados), "| eficientes em C:",
+    paste(dados$Country_Year[sem.investimento][
+      escore.c[sem.investimento] >= 1 - 1e-6], collapse = ", "), "\n")
+menor.pd <- sem.investimento[which.min(dados$rd_usd[sem.investimento])]
+cat("menor P&D entre elas:", dados$Country_Year[menor.pd], "com US$",
+    round(dados$rd_usd[menor.pd] / 1e6), "milhões e escore",
+    round(escore.c[menor.pd], 3), "\n")
+
+# O ranking por país com e sem os anos sem investimento, e o efeito de
+# exigir um mínimo de anos observados.
+por.pais <- tibble(Country = dados$Country, zero = dados$zero_inv,
+                   escore.c) %>%
+  group_by(Country) %>%
+  summarise(n = n(),
+            todos = mean(escore.c),
+            positivos = ifelse(all(zero), NA_real_, mean(escore.c[!zero])),
+            .groups = "drop") %>%
+  arrange(desc(todos))
+cat("top 6 com todos os anos:",
+    paste(head(por.pais$Country, 6), round(head(por.pais$todos, 6), 2),
+          collapse = ", "), "\n")
+ordenado <- arrange(filter(por.pais, !is.na(positivos)), desc(positivos))
+cat("top 6 só com anos de investimento positivo:",
+    paste(head(ordenado$Country, 6), round(head(ordenado$positivos, 6), 2),
+          collapse = ", "), "\n")
+cat("países com menos de 3 anos observados:",
+    paste(filter(por.pais, n < 3)$Country, collapse = ", "), "\n")
+```
+
+```text
+observações sem investimento: 17 de 208 | eficientes em C: Luxembourg-2016, Peru-2018, Ukraine-2014 
+menor P&D entre elas: Peru-2018 com US$ 267 milhões e escore 1 
+top 6 com todos os anos: China 0.63, Australia 0.54, Peru 0.53, Ukraine 0.49, Japan 0.46, Mexico 0.44 
+top 6 só com anos de investimento positivo: China 0.63, Australia 0.54, Japan 0.46, Mexico 0.44, Peru 0.37, United States 0.23 
+países com menos de 3 anos observados: Slovenia, Philippines, Indonesia, Italy, Ireland, Switzerland 
+```
+
+
+> **Diagnóstico.** Sob retornos variáveis e orientação a produto, uma observação sem investimento só pode ser envelopada por outras sem investimento, porque qualquer combinação de referência que a domine precisa ter insumo menor ou igual. Entre as dezessete nessa condição, a de menor gasto em pesquisa é eficiente por construção: é o caso de Peru-2018, que define a fronteira nos quatro modelos. A leitura do topo do ranking muda com isso. O Peru cai de 0,53 para 0,37 quando a média é calculada só sobre os anos com investimento positivo, e a Eslovênia, que aparecia em nono lugar, tem uma única observação, de um ano sem investimento.
+
+> **Melhoria incorporada.** As tabelas de eficientes marcam as observações sem investimento; o ranking por país informa quantos anos cada um tem e traz a média restrita aos anos com investimento positivo, cuja correlação de postos com a média completa é 0,96; e a robustez sem os zeros passou a cobrir os três modelos, não só o de síntese. Nada disso retira as observações da amostra: elas são a informação de que houve produção científica e tecnológica financiada apenas por pesquisa pública, e servem de referência a países com investimento positivo.
+
 ---
 
 ## 5. O núcleo da v3 e o que ele mostra
@@ -289,7 +344,46 @@ Três coisas saltam da leitura dos escores por país (tabela `t03_medias_pais.cs
 
 ![Eficiência de conversão pesquisa → patente por país, colorida pela participação da manufatura no PIB](../resultados/figuras/fig11_conversao_pais.png)
 
-Robustez do núcleo (Spearman com o escore principal): forma per capita 0,12 para S, 0,90 para T e 0,94 para C; fronteiras anuais 0,84; deslocamento de 1 milhão 1,00; sem os zeros 0,99; patentes só até 2019, pelo truncamento à direita da série nos anos finais, 0,99; sem Luxemburgo e Singapura 1,00; insumos defasados em um ano 0,89. T e C são estáveis; S não é.
+Robustez do núcleo (Spearman com o escore principal): forma per capita 0,12 para S, 0,90 para T e 0,94 para C; fronteiras anuais 0,84; deslocamento de 1 milhão 1,00; sem os zeros 0,99 em ST, 0,99 em S, 0,98 em T e 0,97 em C; patentes só até 2019, pelo truncamento à direita da série nos anos finais, 0,99; sem Luxemburgo e Singapura 1,00; insumos defasados em um ano 0,89; sem os seis países com um ou dois anos observados 1,00 nos quatro modelos. T e C são estáveis; S não é.
+
+A cobertura da base condiciona a leitura do ranking por país, e por isso passou a ser apresentada antes dele.
+
+```r
+# A cobertura da base: anos observados por país, observações sem
+# investimento e ausências nas contextuais, antes de qualquer preenchimento.
+cobertura <- dados %>%
+  group_by(Country) %>%
+  summarise(n_anos = n(), n_zeros = sum(zero_inv), .groups = "drop")
+cat("países com os 9 anos:", sum(cobertura$n_anos == 9),
+    "| com menos de 3:",
+    paste(filter(cobertura, n_anos < 3)$Country, collapse = ", "), "\n")
+cat("DMUs por ano:", paste(table(dados$Year), collapse = " "), "\n")
+cat("anos sem investimento por país:",
+    paste(sprintf("%s %d/%d", filter(cobertura, n_zeros > 0)$Country,
+                  filter(cobertura, n_zeros > 0)$n_zeros,
+                  filter(cobertura, n_zeros > 0)$n_anos),
+          collapse = ", "), "\n")
+contextuais.auditadas <- c("manuf_pib", "manuf_exp", "gov", "voice",
+                           "ln_gdppc", "Trade_Percentage", "Z_Score",
+                           "Non.performing.Loans", "pesq_pm")
+faltas <- sapply(contextuais.auditadas, function(v) sum(is.na(dados[[v]])))
+cat("ausências nas contextuais:",
+    paste(names(faltas), faltas, collapse = " | "), "\n")
+```
+
+```text
+países com os 9 anos: 9 | com menos de 3: Indonesia, Ireland, Italy, Philippines, Slovenia, Switzerland 
+DMUs por ano: 22 23 23 26 26 30 24 18 16 
+anos sem investimento por país: Chile 1/5, Colombia 1/3, Croatia 1/3, Greece 1/8, Hungary 1/9, Luxembourg 1/6, Malaysia 1/5, Peru 1/4, Romania 2/6, Slovenia 1/1, South Africa 1/6, Ukraine 5/6 
+ausências nas contextuais: manuf_pib 3 | manuf_exp 0 | gov 0 | voice 0 | ln_gdppc 0 | Trade_Percentage 0 | Z_Score 0 | Non.performing.Loans 0 | pesq_pm 31 
+```
+
+
+![Cobertura da base: países por ano, com as observações sem investimento destacadas](../resultados/figuras/fig12_cobertura_pais_ano.png)
+
+> **Diagnóstico.** Nove países têm os nove anos e seis têm um ou dois; as observações caem de trinta em 2018 para dezesseis em 2021. Dos dezessete anos sem investimento privado, cinco são da Ucrânia, que tem seis observações. Entre as contextuais, só a participação da manufatura tem ausências, três, e a série de pesquisadores por milhão de habitantes, com trinta e uma, não entra em nenhuma regressão.
+
+> **Melhoria incorporada.** O ranking por país informa o número de anos observados e destaca em tom mais claro os países com menos de três; um cenário de robustez repete as quatro fronteiras sem esses seis países, sem alterar a ordenação; e a série de pesquisadores deixou de ser interpolada, porque a interpolação repetia valores por até seis anos numa variável que o trabalho não usa.
 
 ---
 
@@ -437,6 +531,64 @@ No Tobit (`censReg`, como na aula) e no OLS com erros agrupados por país, sem a
 
 ![Coeficientes do segundo estágio em log(δ) com intervalos bootstrap, por modelo](../resultados/figuras/fig10_segundo_estagio.png)
 
+A figura serve como síntese, mas o manuscrito precisa da tabela: os três modelos avaliados à luz das mesmas contextuais, em três estimadores. Ela está completa em `resultados/t20_regressoes_paper.md`; o trecho abaixo traz o painel do Tobit e o resumo das diferenças entre modelos.
+
+```r
+# A tabela de regressões do manuscrito: as mesmas contextuais nos três
+# modelos, em três estimadores. O arquivo é gerado por scripts/pipeline_v3.R.
+tabela <- read_csv("resultados/t20_regressoes_paper.csv",
+                   show_col_types = FALSE)
+print(as.data.frame(filter(tabela, painel == "A. Tobit")), right = FALSE)
+nuances <- read_csv("resultados/t20b_nuances_contextuais.csv",
+                    show_col_types = FALSE)
+cat("\nsentido e número de estimadores significativos a 5%",
+    "(+ = mais eficiência):\n")
+print(as.data.frame(nuances), right = FALSE)
+```
+
+```text
+   painel   contextual                        C                
+1  A. Tobit Manufatura (% do PIB)             0.010** (0.004)  
+2  A. Tobit Manufaturados (% das exportações) -0.002** (0.001) 
+3  A. Tobit Governança (índice)               -0.003 (0.035)   
+4  A. Tobit Voz e responsabilização           -0.007*** (0.002)
+5  A. Tobit ln PIB per capita                 0.062* (0.033)   
+6  A. Tobit Comércio (% do PIB)               -0.001*** (0.000)
+7  A. Tobit Z-score bancário                  0.008*** (0.002) 
+8  A. Tobit Empréstimos inadimplentes         0.000 (0.002)    
+9  A. Tobit Investimento igual a zero         0.299*** (0.059) 
+10 A. Tobit Tendência                         -0.006 (0.006)   
+   S                 T                
+1  0.006 (0.005)     0.009** (0.004)  
+2  -0.000 (0.001)    -0.002** (0.001) 
+3  0.118*** (0.039)  0.002 (0.033)    
+4  -0.006*** (0.002) -0.008*** (0.002)
+5  -0.149*** (0.037) 0.050 (0.031)    
+6  -0.001** (0.000)  -0.001*** (0.000)
+7  0.002 (0.002)     0.004** (0.002)  
+8  0.009*** (0.002)  0.001 (0.002)    
+9  0.010 (0.065)     0.224*** (0.055) 
+10 0.014** (0.007)   -0.005 (0.006)   
+
+sentido e número de estimadores significativos a 5% (+ = mais eficiência):
+   contextual                        C  S  T 
+1  Comércio (% do PIB)               −2 −1 −1
+2  Empréstimos inadimplentes         ·0 +3 ·0
+3  Governança (índice)               ·0 +2 ·0
+4  Investimento igual a zero         +3 ·0 +3
+5  Manufatura (% do PIB)             +2 ·0 +2
+6  Manufaturados (% das exportações) −2 ·0 −2
+7  Tendência                         ·0 +2 ·0
+8  Voz e responsabilização           −2 −2 −2
+9  Z-score bancário                  +3 ·0 +2
+10 ln PIB per capita                 +1 −2 ·0
+```
+
+
+> **Diagnóstico.** Os determinantes da eficiência científica não são os da tecnológica. O produto por habitante entra com sinal negativo e significativo apenas no modelo científico, em dois estimadores, e com sinal oposto no de conversão; a governança e os empréstimos inadimplentes só aparecem no científico; a participação da manufatura, o Z-score bancário e a ausência de investimento privado só nos de patente. A participação dos manufaturados nas exportações entra com sinal negativo nos modelos de patente, o oposto da participação da manufatura no produto, o que sugere que exportar manufatura e produzir tecnologia própria são coisas distintas nesta amostra. Só a voz e responsabilização é significativa nos três, sempre no mesmo sentido implausível discutido na seção seguinte.
+
+> **Melhoria incorporada.** A tabela em formato de periódico passou a ser gerada pelo pipeline, com os três painéis e a mesma lista de contextuais, ao lado de um resumo que registra, para cada variável, em quantos estimadores ela é significativa e em que sentido. É a partir dessa leitura, e não da comparação de um coeficiente isolado, que a discussão do manuscrito se organiza.
+
 ---
 
 ## 8. O que mais o template mostrou
@@ -577,7 +729,150 @@ voice: Tobit -0.0075 (p 0.00058 ) | voice médio: 13 países 78 vs demais 64 | C
 
 ---
 
-## 10. Situação atual
+## 10. A fronteira agrupada é uma metafronteira
+
+A segunda sessão de orientação observou que o painel desbalanceado justifica tratar a fronteira agrupada como metafronteira. A observação dá estatuto teórico ao que era uma escolha de template e produz três resultados que o desenho anterior não extraía.
+
+A fronteira agrupada é a fronteira global ou intertemporal: ela envolve as fronteiras contemporâneas de cada ano, porque o conjunto das 208 observações contém o de cada ano. A razão entre a eficiência medida contra a fronteira do próprio ano e a medida contra a fronteira global é a lacuna tecnológica, que diz quanto a melhor prática de um ano fica aquém da melhor prática de todo o período.
+
+```r
+# A fronteira agrupada como metafronteira: eficiência contra a fronteira do
+# próprio ano (contemporânea), contra a união das fronteiras anuais e contra
+# a fronteira global, e a lacuna tecnológica que resulta da comparação.
+EficienciaPorGrupo <- function(x, y, grupo) {
+  # Eficiência de Farrell contra a fronteira do próprio grupo.
+  resultado <- rep(NA_real_, nrow(x))
+  for (g in unique(grupo)) {
+    linhas <- which(grupo == g)
+    resultado[linhas] <- eff(dea(x[linhas, , drop = FALSE],
+                                 y[linhas, , drop = FALSE],
+                                 RTS = "vrs", ORIENTATION = "out"))
+  }
+  resultado
+}
+EficienciaUniao <- function(x, y, grupo) {
+  # Metafronteira não convexa: melhor fronteira de grupo para cada DMU.
+  por.grupo <- sapply(unique(grupo), function(g) {
+    ref <- which(grupo == g)
+    eff(dea(x, y, RTS = "vrs", ORIENTATION = "out",
+            XREF = x[ref, , drop = FALSE], YREF = y[ref, , drop = FALSE]))
+  })
+  apply(por.grupo, 1, function(linha) max(linha[is.finite(linha)]))
+}
+
+y.patentes <- as.matrix(dados[, "pat", drop = FALSE])
+eff.global <- eff(dea(x.extensivo, y.patentes, RTS = "vrs",
+                      ORIENTATION = "out"))
+eff.contemp <- EficienciaPorGrupo(x.extensivo, y.patentes, dados$Year)
+eff.uniao <- EficienciaUniao(x.extensivo, y.patentes, dados$Year)
+tgr <- eff.contemp / eff.global
+cat("modelo T | eficientes contra o próprio ano",
+    round(100 * mean(eff.contemp <= 1 + 1e-6), 1), "% | contra a fronteira",
+    "global", round(100 * mean(eff.global <= 1 + 1e-6), 1), "%\n")
+cat("lacuna tecnológica média:", round(mean(tgr), 3),
+    "| contra a união não convexa:", round(mean(eff.contemp / eff.uniao), 3),
+    "| efeito da convexificação:",
+    round(mean(eff.global / eff.uniao), 3), "\n")
+cat("lacuna por ano:\n")
+print(round(tapply(tgr, dados$Year, mean), 2))
+
+# Malmquist global (Pastor & Lovell, 2005): a fronteira global serve de
+# referência única, de modo que o índice não exige painel balanceado.
+esc.global <- pmin(1 / eff.global, 1)
+esc.contemp <- pmin(1 / eff.contemp, 1)
+malm <- tibble(Country = dados$Country, Year = dados$Year,
+               esc.global, esc.contemp, tgr) %>%
+  group_by(Country) %>%
+  filter(n() >= 2) %>%
+  arrange(Year, .by_group = TRUE) %>%
+  summarise(M = last(esc.global) / first(esc.global),
+            EC = last(esc.contemp) / first(esc.contemp),
+            BPC = last(tgr) / first(tgr), .groups = "drop")
+MediaGeometrica <- function(v) exp(mean(log(v)))
+cat("Malmquist global do modelo T em", nrow(malm),
+    "países (contra 13 no subpainel balanceado): M =",
+    round(MediaGeometrica(malm$M), 3), "| EC =",
+    round(MediaGeometrica(malm$EC), 3), "| BPC =",
+    round(MediaGeometrica(malm$BPC), 3), "\n")
+```
+
+```text
+modelo T | eficientes contra o próprio ano 17.8 % | contra a fronteira global 3.4 %
+lacuna tecnológica média: 0.485 | contra a união não convexa: 0.565 | efeito da convexificação: 1.196 
+lacuna por ano:
+2013 2014 2015 2016 2017 2018 2019 2020 2021 
+0.63 0.36 0.29 0.27 0.35 0.52 0.61 0.83 0.68 
+Malmquist global do modelo T em 34 países (contra 13 no subpainel balanceado): M = 0.374 | EC = 0.271 | BPC = 1.381 
+```
+
+
+> **Diagnóstico.** No modelo de patentes, 17,8 % das observações são eficientes contra o próprio ano e 3,4 % contra a fronteira global: a diferença entre os dois números, que antes parecia um problema de especificação, é a lacuna tecnológica. Ela vale 0,49 em média e tem trajetória clara: cai de 0,63 em 2013 para 0,27 em 2016 e volta a 0,83 em 2020. A tecnologia de conversão de dinheiro em patente de inteligência artificial piorou na segunda metade da década passada e recuperou terreno no fim do período. A lacuna calculada com o número de observações igualado ao do menor ano preserva esse desenho, de modo que ele não é efeito do tamanho da amostra de cada ano.
+
+> **Melhoria incorporada.** A metafronteira entrou no pipeline para os quatro modelos, com três referências: a fronteira contemporânea, a sequencial (que usa os anos até t) e a união não convexa das fronteiras anuais. Dessa última vem uma ressalva metodológica: a fronteira agrupada convexifica a união, isto é, admite combinações de observações de anos diferentes, e o efeito não é desprezível, entre 10 % e 27 % conforme o modelo. Só cerca de um oitavo das observações está na metatecnologia não convexa. As duas versões são reportadas lado a lado.
+
+> **Melhoria incorporada.** O índice de Malmquist ganhou uma versão global. Com a fronteira intertemporal como referência única, ele não exige painel balanceado e cobre 34 países, contra os 13 do subpainel de 2016 a 2021, e se decompõe exatamente em aproximação à fronteira do próprio ano e deslocamento dessa fronteira em relação à global. No modelo de publicações, o índice global indica ganho de 4,9 % no período; no de patentes, queda, com avanço da fronteira e afastamento dos países em relação a ela. A comparação com o índice adjacente do subpainel, no mesmo período e nos mesmos países, tem correlação de postos de 0,70 mas níveis diferentes, o que é o comportamento esperado: o índice adjacente atribui a regresso técnico o que o global lê como distância à melhor prática do período.
+
+Uma decomposição exploratória por faixa de renda mostra que a fronteira global é essencialmente a dos países de renda média: a lacuna desse grupo é de 0,95 no modelo científico e 0,99 no tecnológico, contra 0,65 e 0,31 no grupo de renda alta. É a mesma heterogeneidade que o SFA não consegue identificar no modelo científico e que as classes latentes separam por tamanho.
+
+![Lacuna tecnológica média por ano e por modelo, com o número de observações de cada ano](../resultados/figuras/fig13_tgr_por_ano.png)
+
+---
+
+## 11. O que a base de publicações mede e os casos que quebram o padrão
+
+A orientação observou que a variável de publicações cobre um recorte da produção científica de cada país, e que a participação desse recorte no total varia muito. Uma fonte externa permite medir isso e, de passagem, conferir a própria variável.
+
+```r
+# A produção de IA da base contra o OpenAlex e a composição da produção
+# científica de cada país (dados/baixar_openalex.sh).
+conferencia <- read_csv("resultados/t28_conferencia_publicacoes.csv",
+                        show_col_types = FALSE)
+cat("Spearman(AI.Publications, artigos de IA no OpenAlex) =",
+    Spearman(conferencia$pubs, conferencia$oa_ai), "| razão mediana",
+    round(median(conferencia$pubs / conferencia$oa_ai), 2), "\n")
+composicao <- conferencia %>%
+  group_by(Country) %>%
+  summarise(exatas_e_vida = 100 * mean(stem_share),
+            ciencias_sociais = 100 * mean(social_share),
+            ia = 100 * mean(ai_share_oa), .groups = "drop") %>%
+  arrange(desc(exatas_e_vida))
+print(as.data.frame(mutate(head(composicao, 5),
+                           across(where(is.numeric),
+                                  ~ round(.x, 1)))))
+print(as.data.frame(mutate(tail(composicao, 5),
+                           across(where(is.numeric), ~ round(.x, 1)))))
+```
+
+```text
+Spearman(AI.Publications, artigos de IA no OpenAlex) = 0.957 | razão mediana 1.45 
+    Country exatas_e_vida ciencias_sociais  ia
+1     China          74.8              6.9 3.6
+2   Ukraine          65.7             19.0 1.8
+3 Singapore          62.8             12.9 4.2
+4     India          61.8              9.3 3.2
+5     Japan          59.6              6.9 2.4
+   Country exatas_e_vida ciencias_sociais  ia
+1    Chile          43.2             35.4 1.7
+2  Croatia          39.0             39.3 1.7
+3   Brazil          38.7             38.4 1.4
+4 Colombia          35.8             39.8 1.1
+5     Peru          33.4             42.3 0.7
+```
+
+
+> **Diagnóstico.** A variável da base e a contagem de artigos de inteligência artificial do OpenAlex ordenam os países quase da mesma forma, com correlação de postos de 0,96, mas em níveis diferentes, com razão mediana de 1,45 e variação sistemática por país. São bases de indexação distintas, e a conferência sustenta o uso da variável para comparar países, não para ler volumes absolutos. A composição da produção total confirma o argumento da orientação: as ciências exatas e da vida respondem por 75 % dos artigos chineses e 60 % dos japoneses, contra 39 % dos brasileiros e 33 % dos peruanos, e as ciências sociais fazem o caminho inverso, de 7 % na China e no Japão a 42 % no Peru.
+
+> **Melhoria incorporada.** A participação das ciências exatas e da vida e a participação da inteligência artificial no período anterior ao analisado entraram como contextuais de sensibilidade no segundo estágio. Não entram na especificação principal porque a participação medida no mesmo ano é simultânea aos produtos do modelo; a versão anterior ao período é predeterminada e não tem esse problema.
+
+![Composição da produção científica de cada país: participação das ciências exatas e da vida e das ciências sociais](../resultados/figuras/fig14_especializacao.png)
+
+O mesmo material sustenta a discussão dos casos, pedida na orientação, que está em `documentos/discussao_casos.md`. Três posições do topo do ranking não são desempenho, e sim geometria da fronteira: Peru, Ucrânia e Eslovênia aparecem à frente porque suas observações sem investimento só podem ser comparadas entre si. México e Japão são os casos substantivos do topo, com nove anos observados, participação da manufatura perto de 20 % do produto e conversão alta. Na cauda, Suíça, Irlanda, Holanda, Bélgica, Noruega e Israel formam um bloco explicado pela rota de depósito da patente, e França e Reino Unido, que têm volume de patentes muito acima desse bloco, se distinguem pela composição da produção científica, com um quarto dos artigos em ciências sociais.
+
+A conferência interna apoia a leitura sobre o escritório de depósito: as patentes de inteligência artificial acompanham os depósitos de residentes, com correlação de 0,88 em logaritmo, contra 0,71 com os de não residentes, e a razão entre patentes de inteligência artificial e depósitos de residentes é de 5,3 por mil nos treze países que depositam pela via europeia, contra 8,3 por mil nos demais. A diferença é modesta, de modo que a evidência é sugestiva e não substitui a série por país do inventor.
+
+---
+
+## 12. Situação atual
 
 | Pergunta ou hipótese | Situação | Evidência |
 |---|---|---|
@@ -585,13 +880,15 @@ voice: Tobit -0.0075 (p 0.00058 ) | voice médio: 13 países 78 vs demais 64 | C
 | H1: base industrial → mais eficiência em patentes | Plausível, evidência frágil | Positiva e significativa em Tobit, OLS agrupado e Simar-Wilson sem voice; cai pela metade com voice; some sem os países de patente ≈ 0 |
 | H2: base industrial importa menos para ciência | Compatível | Coeficiente fraco e instável em S em todos os estimadores; S não é robusto entre unidades |
 | Instituições e solidez financeira | Inconclusivo | Voice com sinal implausível; Z-score negativo sobre a ineficiência em T e C; governança perde significância com voice |
-| Dinâmica | Respondida | Malmquist: fronteira de publicações por dólar recuou; catch-up positivo |
+| Dinâmica | Respondida | Malmquist global em 34 países: a tecnologia de patentes avançou e os países se afastaram dela; a lacuna tecnológica cai até 2016 e se recupera até 2020 |
+| O que a variável de publicações mede | Respondida | Mesma ordenação do OpenAlex (0,96) em níveis diferentes; a participação das exatas e da vida vai de 33 % a 75 % entre os países |
+| Por que países improváveis lideram | Respondida | Peru, Ucrânia e Eslovênia são âncoras das observações sem investimento; México e Japão são os casos substantivos do topo |
 
-Pendências de dados, em ordem de importância: (1) definição de `AI.Patent.Applications` (inventor ou depositante, escritório) e uma série alternativa por país do inventor (OECD.AI, WIPO); (2) escala e fonte do arquivo de Voice & Accountability (0–100, não é o percentil do WGI); (3) unidade do investimento (corrente ou constante), origem dos zeros e cobertura por país do rastreador.
+Pendências de dados, em ordem de importância: (1) definição de `AI.Patent.Applications` (inventor ou depositante, escritório) e uma série alternativa por país do inventor (OECD.AI, WIPO), agora com evidência interna de que a variável acompanha depósitos de residentes; (2) escala e fonte do arquivo de Voice & Accountability (0–100, não é o percentil do WGI); (3) unidade do investimento (corrente ou constante) e cobertura por país do rastreador. A origem dos zeros deixou de ser pendência: eles são tratados como ausência de investimento, não como valor abaixo de um limiar.
 
 ---
 
-## 11. Decisões em aberto
+## 13. Decisões em aberto
 
 As melhorias das seções anteriores já estão incorporadas ao trabalho. Restam seis decisões, que dependem de discussão antes da apresentação e da submissão.
 
@@ -604,23 +901,24 @@ As melhorias das seções anteriores já estão incorporadas ao trabalho. Restam
 
 ---
 
-## 12. Pontos a validar com o professor
+## 14. Pontos em aberto com o professor
 
-A prévia dos resultados de 21/09 é a ocasião de submeter, a quem tem experiência com o método e com esta base, as escolhas em que ainda há dúvida sobre o caminho. Diferentemente da seção anterior, que lista decisões, esta reúne perguntas: em cada uma, o que foi feito, onde está a dúvida e o que a resposta mudaria. Dentro de cada bloco, os pontos estão em ordem decrescente de impacto sobre o trabalho.
+A segunda sessão de orientação respondeu parte das perguntas que esta seção reunia, e as respostas estão incorporadas às seções anteriores: a fronteira agrupada é adequada e tem estatuto de metafronteira; o zero é informação verdadeira e não pede análise de ponto de corte; as observações de insumo mínimo devem ser interpretadas e discutidas como casos, não excluídas; o segundo estágio vai ao manuscrito como tabela de regressões com os três modelos; e o resultado que contraria a hipótese pede construção contrafactual na discussão. O registro completo está em `documentos/orientacao_sessao_2.md`.
+
+O que segue são as perguntas que continuam abertas: em cada uma, o que foi feito, onde está a dúvida e o que a resposta mudaria. Dentro de cada bloco, os pontos estão em ordem decrescente de impacto sobre o trabalho.
 
 ### Sobre os dados
 
 - **A variável de patentes.** O trabalho inferiu, por testes internos, que `AI.Patent.Applications` é por milhão de habitantes e que conta depósitos em escritórios nacionais, o que zera países que patenteiam via EPO e PCT (Suíça, Holanda, Irlanda, Bélgica, Noruega, Israel e outros sete). O grupo do professor já trabalhou com esta base (Fukuyama, Tan & Wanke, 2025). A dúvida é de fonte: qual a definição exata (país do inventor ou do depositante; escritório), como esses países foram tratados nesse trabalho e se existe uma série alternativa já usada pelo grupo (OECD.AI, WIPO). A resposta decide o tratamento dos 13 países e, com ele, o veredito sobre H1; nenhuma outra pendência tem esse alcance.
-- **O investimento e os zeros.** O trabalho inferiu que a fonte arredonda a milhões (o menor valor positivo é exatamente US\$ 1.000.000) e que zero pode significar "menos de meio milhão", em linha com a leitura de fenômeno recente feita na orientação. O tratamento adotado foi um deslocamento de metade do menor valor positivo, com robustez sem os zeros (Spearman 0,99). A dúvida: se a fonte é conhecida (AI Index, Quid), se os valores são correntes e se o deslocamento é preferível à normalização mín–máx mencionada na orientação. Como o BCC orientado a produto é invariante a translações, a resposta afeta só o CCR e a eficiência de escala.
+- **O investimento.** A fonte arredonda a milhões, e o menor valor positivo é exatamente US\$ 1.000.000. O zero passou a ser lido como ausência de investimento privado registrado, conforme a orientação. Resta saber se a fonte é conhecida (AI Index, Quid), se os valores são correntes ou constantes e qual a cobertura do rastreador por país, o que afeta a comparabilidade entre economias pequenas e grandes.
 - **Voice & Accountability.** O arquivo está numa escala 0–100 que não corresponde ao percentil do WGI (Noruega 90, China 31), e a fonte exata ainda não está documentada. Uma conclusão central depende dessa variável. A dúvida é se o grupo dispõe da série original do WGI e se a escala usada altera a leitura.
 
 ### Sobre o desenho da fronteira
 
 - **Modelo C como estágio único ou DEA em rede.** O modelo C coloca as publicações do lado dos insumos das patentes. É uma forma de comprimir num único DEA o que seria uma rede de dois estágios (investimento e P&D → publicações → patentes). A dúvida: se o modelo C é defensível como está num manuscrito ou se a versão correta é o DEA em rede, como nos trabalhos vistos nas sessões iniciais. A resposta muda a peça central do argumento e qual escore o segundo estágio explica.
-- **Fronteira agrupada em nove anos com uma fronteira que recua.** O template agrupa o painel inteiro; aqui a fronteira de publicações por dólar recuou 11 % entre 2016 e 2021 (componente de deslocamento do Malmquist 0,891) enquanto o investimento mediano se multiplicou por 27. A dúvida tem duas partes: se a fronteira agrupada de 2013 a 2021 é adequada quando a tecnologia se move tanto, ou se o desenho deveria ser sequencial ou em janela (que impede regresso técnico por construção); e se a leitura do recuo como defasagem entre investimento e produção é aceitável, ou se ele aponta um problema de desenho. Muda a especificação principal e o slide de dinâmica.
+- **A convexificação da metafronteira.** A fronteira agrupada admite combinações de observações de anos diferentes, o que a união das tecnologias anuais não admite, e o efeito vai de 10 % a 27 % conforme o modelo. O trabalho reporta as duas versões. A dúvida é se a versão convexa basta como resultado principal num manuscrito, com a não convexa em nota, ou se a literatura recente exige o contrário.
 - **Defasagens.** A literatura de sistemas de inovação espera investimento em t, publicações em t+1 e patentes em t+2. A especificação principal é contemporânea; a defasada de um ano entra como robustez (154 pares, Spearman 0,89). A dúvida é se a defasada deveria ser a principal, mesmo perdendo um quarto das observações, ou se contemporânea com robustez basta.
 - **O escore científico que não é robusto.** O modelo S muda de ranking entre a forma em contagem e a per capita (Spearman 0,12), o SFA não identifica ineficiência nele (λ < 0) e as classes latentes separam sistemas grandes de pequenos. Três caminhos: manter S e reportar a instabilidade; tirar S do manuscrito e ficar com T, C e ST; ou tratar S por classes, com uma metafronteira. A opinião de quem publica com DEA sobre o que um parecerista aceita decide.
-- **Os outliers de insumo minúsculo.** Peru, Ucrânia, Malásia e Romênia definem a fronteira com insumos ínfimos; a supereficiência confirma (Ucrânia-2014 1,84; Malásia-2014 1,82) e o Order-m os reclassifica. A dúvida: excluir (Wilson, 1993), manter com a fronteira parcial como resultado principal, ou manter e reportar. Muda o topo do ranking e o diagnóstico setorial.
 
 ### Sobre o segundo estágio
 
@@ -631,7 +929,8 @@ A prévia dos resultados de 21/09 é a ocasião de submeter, a quem tem experiê
 ### Sobre o manuscrito e a apresentação
 
 - **Escopo e periódico.** O Syllabus manda replicar todas as técnicas; no manuscrito, quais ficam. E o periódico: SEPS, Technological Forecasting & Social Change ou Journal of the Knowledge Economy. A orientação mencionou que o grupo já explorou esta base "tudo econometria" e que há periódicos que preferem mediação e moderação a DEA; a dúvida é qual é esse trabalho, como posicionar a contribuição sem sobrepor Fukuyama, Tan & Wanke (2025), e como justificar a escolha pela fronteira.
-- **O diagnóstico setorial do deck.** O Syllabus pede diagnóstico setorial nos slides finais. A dúvida é de recorte: o Brasil (10º de 37 na conversão, 0,36 na síntese) ou o sistema de IA como um todo (fronteira recuando, países EPO fora do mapa de patentes); e quanto dos vinte minutos dedicar às técnicas em relação ao diagnóstico.
+- **O diagnóstico setorial do deck.** O Syllabus pede diagnóstico setorial nos slides finais. A dúvida é de recorte: o Brasil (10º de 37 na conversão, 0,36 na síntese) ou o sistema de IA como um todo (lacuna tecnológica que se recupera no fim do período, países que depositam fora do escritório nacional ausentes do mapa de patentes); e quanto dos vinte minutos dedicar às técnicas em relação ao diagnóstico.
+- **Capital humano.** A contribuição oferecida na sessão, sobre formandos em áreas de ciência e tecnologia e patentes, não pode entrar no painel: a série cobre menos da metade das observações e falta inteira para China, Japão, Israel e Argentina. A dúvida é se ela entra na revisão de literatura, na discussão, ou nas duas.
 
 Se houver tempo para poucos pontos, os que mais mudam o trabalho são a variável de patentes, o modelo C como estágio único ou rede, e o estimador do segundo estágio; os demais podem esperar a submissão.
 
@@ -639,8 +938,8 @@ Se houver tempo para poucos pontos, os que mais mudam o trabalho são a variáve
 
 ## Anexo: reprodução
 
-- `Rscript scripts/pipeline_v3.R` (cerca de 50 segundos) gera `resultados/t01`–`t19` e `resultados/figuras/fig01`–`fig11`; `RAPIDO=FALSE` para os valores finais. O arquivo segue o Google R Style Guide e traz o cabeçalho com entradas, saídas e modo de uso.
+- `Rscript scripts/pipeline_v3.R` (cerca de um minuto) gera `resultados/t01`–`t28` e `resultados/figuras/fig01`–`fig14`; `RAPIDO=FALSE` para os valores finais. O arquivo segue o Google R Style Guide e traz o cabeçalho com entradas, saídas e modo de uso.
 - `Rscript scripts/relatorio/run_prints.R` regenera as saídas deste relatório em `resultados/prints/`; `python3 scripts/relatorio/build_report.py` remonta este documento e a versão em página.
 - `Rscript scripts/replica_analise_critica.R` reproduz a análise crítica da v2 sem depender de pacotes de DEA.
-- Contextuais: `bash dados/baixar_wdi.sh` (WDI) e `dados/wgi.voice_accountability.csv` (WGI).
-- Documentos: `documentos/proposta_v3.md` (proposta atual), `documentos/analise_critica.md` (crítica das versões anteriores), `documentos/anteriores/proposta_v2_revisada.md` e `documentos/anteriores/proposta_eficiencia_ia.md` (versões anteriores), `material_disciplina/comments.txt` (orientação transcrita).
+- Contextuais e fontes externas: `bash dados/baixar_wdi.sh` (WDI), `dados/wgi.voice_accountability.csv` (WGI) e `bash dados/baixar_openalex.sh` (OpenAlex, para a conferência das publicações e a composição da produção científica).
+- Documentos: `documentos/proposta_v3.md` (proposta atual), `documentos/orientacao_sessao_2.md` (registro da segunda sessão de orientação), `documentos/discussao_casos.md` (casos do topo e da cauda do ranking), `documentos/analise_critica.md` (crítica das versões anteriores), `documentos/anteriores/proposta_v2_revisada.md` e `documentos/anteriores/proposta_eficiencia_ia.md` (versões anteriores), `material_disciplina/comments.txt` e `material_disciplina/comments_sessao_2.txt` (orientação transcrita).

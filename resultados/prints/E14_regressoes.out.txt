@@ -1,0 +1,35 @@
+   painel   contextual                        C                
+1  A. Tobit Manufatura (% do PIB)             0.010** (0.004)  
+2  A. Tobit Manufaturados (% das exportações) -0.002** (0.001) 
+3  A. Tobit Governança (índice)               -0.003 (0.035)   
+4  A. Tobit Voz e responsabilização           -0.007*** (0.002)
+5  A. Tobit ln PIB per capita                 0.062* (0.033)   
+6  A. Tobit Comércio (% do PIB)               -0.001*** (0.000)
+7  A. Tobit Z-score bancário                  0.008*** (0.002) 
+8  A. Tobit Empréstimos inadimplentes         0.000 (0.002)    
+9  A. Tobit Investimento igual a zero         0.299*** (0.059) 
+10 A. Tobit Tendência                         -0.006 (0.006)   
+   S                 T                
+1  0.006 (0.005)     0.009** (0.004)  
+2  -0.000 (0.001)    -0.002** (0.001) 
+3  0.118*** (0.039)  0.002 (0.033)    
+4  -0.006*** (0.002) -0.008*** (0.002)
+5  -0.149*** (0.037) 0.050 (0.031)    
+6  -0.001** (0.000)  -0.001*** (0.000)
+7  0.002 (0.002)     0.004** (0.002)  
+8  0.009*** (0.002)  0.001 (0.002)    
+9  0.010 (0.065)     0.224*** (0.055) 
+10 0.014** (0.007)   -0.005 (0.006)   
+
+sentido e número de estimadores significativos a 5% (+ = mais eficiência):
+   contextual                        C  S  T 
+1  Comércio (% do PIB)               −2 −1 −1
+2  Empréstimos inadimplentes         ·0 +3 ·0
+3  Governança (índice)               ·0 +2 ·0
+4  Investimento igual a zero         +3 ·0 +3
+5  Manufatura (% do PIB)             +2 ·0 +2
+6  Manufaturados (% das exportações) −2 ·0 −2
+7  Tendência                         ·0 +2 ·0
+8  Voz e responsabilização           −2 −2 −2
+9  Z-score bancário                  +3 ·0 +2
+10 ln PIB per capita                 +1 −2 ·0

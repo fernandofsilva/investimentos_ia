@@ -1,0 +1,421 @@
+Country,tipo,nome,n
+Brazil,instituicoes,Universidade de São Paulo,2540
+Brazil,instituicoes,Universidade Federal de Minas Gerais,1281
+Brazil,instituicoes,Universidade Estadual de Campinas (UNICAMP),1234
+Brazil,instituicoes,Universidade Federal do Rio de Janeiro,1200
+Brazil,instituicoes,Universidade Federal do Rio Grande do Sul,1024
+Brazil,instituicoes,Universidade de Brasília,1010
+Brazil,instituicoes,Universidade Estadual Paulista (Unesp),945
+Brazil,instituicoes,Universidade Federal de Pernambuco,836
+Brazil,instituicoes,"Ministry of Science, Technology and Innovation",715
+Brazil,instituicoes,Universidade Federal de Santa Catarina,712
+Brazil,instituicoes,Universidade Federal do Rio Grande do Norte,621
+Brazil,instituicoes,Universidade Federal do Paraná,590
+Brazil,instituicoes,Universidade Federal Fluminense,548
+Brazil,instituicoes,Universidade Federal do Ceará,513
+Brazil,instituicoes,Universidade Federal de São Carlos,507
+Brazil,topicos,Geological and Geochemical Analysis,1336
+Brazil,topicos,Linguistics and Education Research,934
+Brazil,topicos,Linguistic Studies and Language Acquisition,853
+Brazil,topicos,Geochemistry and Geologic Mapping,766
+Brazil,topicos,Quantum Information and Cryptography,627
+Brazil,topicos,Phonetics and Phonology Research,537
+Brazil,topicos,Solar Radiation and Photovoltaics,428
+Brazil,topicos,Semantic Web and Ontologies,390
+Brazil,topicos,Natural Language Processing Techniques,374
+Brazil,topicos,Geography and Environmental Studies,304
+Brazil,topicos,Linguistics and Language Studies,298
+Brazil,topicos,Spanish Linguistics and Language Studies,282
+Brazil,topicos,Soil Geostatistics and Mapping,236
+Brazil,topicos,Coding theory and cryptography,227
+Brazil,topicos,Neural Networks and Applications,223
+Switzerland,instituicoes,Board of the Swiss Federal Institutes of Technology,3881
+Switzerland,instituicoes,ETH Zurich,2508
+Switzerland,instituicoes,École Polytechnique Fédérale de Lausanne,1345
+Switzerland,instituicoes,University of Geneva,1068
+Switzerland,instituicoes,University of Zurich,1008
+Switzerland,instituicoes,Centre National de la Recherche Scientifique,690
+Switzerland,instituicoes,University of Bern,567
+Switzerland,instituicoes,University of Lausanne,471
+Switzerland,instituicoes,Università della Svizzera italiana,447
+Switzerland,instituicoes,University of Basel,429
+Switzerland,instituicoes,European Organization for Nuclear Research,367
+Switzerland,instituicoes,University of Applied Sciences and Arts of Southern Switzerland,334
+Switzerland,instituicoes,Université Paris-Saclay,305
+Switzerland,instituicoes,IBM (United States),255
+Switzerland,instituicoes,Max Planck Society,243
+Switzerland,topicos,Quantum Information and Cryptography,463
+Switzerland,topicos,Geological and Geochemical Analysis,455
+Switzerland,topicos,Particle physics theoretical and experimental studies,330
+Switzerland,topicos,Quantum Computing Algorithms and Architecture,239
+Switzerland,topicos,Quantum Mechanics and Applications,212
+Switzerland,topicos,Natural Language Processing Techniques,160
+Switzerland,topicos,Cryptography and Data Security,148
+Switzerland,topicos,Bayesian Modeling and Causal Inference,120
+Switzerland,topicos,AI in cancer detection,116
+Switzerland,topicos,Geochemistry and Geologic Mapping,108
+Switzerland,topicos,Linguistic Studies and Language Acquisition,108
+Switzerland,topicos,Semantic Web and Ontologies,105
+Switzerland,topicos,Neural Networks and Applications,97
+Switzerland,topicos,Solar Radiation and Photovoltaics,97
+Switzerland,topicos,Quantum and electron transport phenomena,95
+China,instituicoes,Chinese Academy of Sciences,18008
+China,instituicoes,University of Chinese Academy of Sciences,4799
+China,instituicoes,Tsinghua University,4764
+China,instituicoes,University of Science and Technology of China,3923
+China,instituicoes,Xidian University,3375
+China,instituicoes,Shanghai Jiao Tong University,3266
+China,instituicoes,Zhejiang University,3253
+China,instituicoes,Peking University,3116
+China,instituicoes,University of Electronic Science and Technology of China,3080
+China,instituicoes,Harbin Institute of Technology,2935
+China,instituicoes,Wuhan University,2768
+China,instituicoes,National University of Defense Technology,2763
+China,instituicoes,State Council of the People's Republic of China,2748
+China,instituicoes,Beijing University of Posts and Telecommunications,2739
+China,instituicoes,Beihang University,2728
+China,topicos,Quantum Information and Cryptography,8351
+China,topicos,Advanced Computational Techniques and Applications,6653
+China,topicos,Geological and Geochemical Analysis,6332
+China,topicos,Cryptography and Data Security,4232
+China,topicos,Metaheuristic Optimization Algorithms Research,3836
+China,topicos,Target Tracking and Data Fusion in Sensor Networks,3000
+China,topicos,Educational Technology and Pedagogy,2792
+China,topicos,Geochemistry and Geologic Mapping,2388
+China,topicos,Coding theory and cryptography,2306
+China,topicos,Machine Learning and ELM,2267
+China,topicos,Privacy-Preserving Technologies in Data,2265
+China,topicos,Topic Modeling,2163
+China,topicos,Anomaly Detection Techniques and Applications,1954
+China,topicos,Neural Networks and Applications,1899
+China,topicos,Quantum Computing Algorithms and Architecture,1856
+France,instituicoes,Centre National de la Recherche Scientifique,18762
+France,instituicoes,Institut des Sciences de l'Information et de leurs Interactions,4994
+France,instituicoes,Institut national de recherche en sciences et technologies du numérique,4876
+France,instituicoes,Université Paris-Saclay,4043
+France,instituicoes,Université Paris Cité,3026
+France,instituicoes,Sorbonne Université,2853
+France,instituicoes,Université Paris Sciences et Lettres,2726
+France,instituicoes,Institut Polytechnique de Paris,2359
+France,instituicoes,Institut Mines-Télécom,2218
+France,instituicoes,Institut National des Sciences de l'Univers,2132
+France,instituicoes,Université de Lyon,2123
+France,instituicoes,Inserm,2024
+France,instituicoes,Institut National des Sciences Mathématiques et de leurs Interactions,1981
+France,instituicoes,Université Grenoble Alpes,1976
+France,instituicoes,Université de Toulouse,1629
+France,topicos,Geological and Geochemical Analysis,917
+France,topicos,Quantum Information and Cryptography,878
+France,topicos,Natural Language Processing Techniques,841
+France,topicos,"Logic, programming, and type systems",733
+France,topicos,Semantic Web and Ontologies,726
+France,topicos,Coding theory and cryptography,637
+France,topicos,"Logic, Reasoning, and Knowledge",491
+France,topicos,Bayesian Methods and Mixture Models,430
+France,topicos,Geochemistry and Geologic Mapping,407
+France,topicos,semigroups and automata theory,384
+France,topicos,Formal Methods in Verification,367
+France,topicos,Quantum Computing Algorithms and Architecture,357
+France,topicos,Statistical Methods and Inference,340
+France,topicos,Linguistic Studies and Language Acquisition,336
+France,topicos,Cryptography and Data Security,291
+United Kingdom,instituicoes,University of London,6516
+United Kingdom,instituicoes,University of Oxford,3543
+United Kingdom,instituicoes,University College London,2692
+United Kingdom,instituicoes,University of Cambridge,2577
+United Kingdom,instituicoes,Imperial College London,2362
+United Kingdom,instituicoes,University of Edinburgh,1999
+United Kingdom,instituicoes,Centre National de la Recherche Scientifique,1413
+United Kingdom,instituicoes,University of Manchester,1389
+United Kingdom,instituicoes,University of Bristol,1363
+United Kingdom,instituicoes,University of Southampton,1138
+United Kingdom,instituicoes,University of Nottingham,1130
+United Kingdom,instituicoes,University of Sheffield,1119
+United Kingdom,instituicoes,University of Warwick,1105
+United Kingdom,instituicoes,King's College London,1077
+United Kingdom,instituicoes,University of Birmingham,1005
+United Kingdom,topicos,Quantum Information and Cryptography,1870
+United Kingdom,topicos,Geological and Geochemical Analysis,1310
+United Kingdom,topicos,Quantum Computing Algorithms and Architecture,838
+United Kingdom,topicos,Natural Language Processing Techniques,805
+United Kingdom,topicos,"Logic, programming, and type systems",771
+United Kingdom,topicos,Geochemistry and Geologic Mapping,716
+United Kingdom,topicos,Semantic Web and Ontologies,685
+United Kingdom,topicos,Quantum Mechanics and Applications,569
+United Kingdom,topicos,Topic Modeling,541
+United Kingdom,topicos,"Logic, Reasoning, and Knowledge",528
+United Kingdom,topicos,AI in cancer detection,502
+United Kingdom,topicos,Bayesian Methods and Mixture Models,500
+United Kingdom,topicos,Metaheuristic Optimization Algorithms Research,480
+United Kingdom,topicos,Cryptography and Data Security,454
+United Kingdom,topicos,Bayesian Modeling and Causal Inference,430
+Ireland,instituicoes,University College Dublin,653
+Ireland,instituicoes,Trinity College Dublin,510
+Ireland,instituicoes,Dublin City University,385
+Ireland,instituicoes,Ollscoil na Gaillimhe – University of Galway,346
+Ireland,instituicoes,University College Cork,251
+Ireland,instituicoes,"National University of Ireland, Maynooth",175
+Ireland,instituicoes,University of Limerick,149
+Ireland,instituicoes,Centre National de la Recherche Scientifique,117
+Ireland,instituicoes,IBM (United States),96
+Ireland,instituicoes,Schlumberger (France),85
+Ireland,instituicoes,Schlumberger (Ireland),85
+Ireland,instituicoes,Government of Ireland,84
+Ireland,instituicoes,IBM Research - Thomas J. Watson Research Center,84
+Ireland,instituicoes,IBM Research - Ireland,77
+Ireland,instituicoes,Chinese Academy of Sciences,63
+Ireland,topicos,Geological and Geochemical Analysis,158
+Ireland,topicos,Natural Language Processing Techniques,153
+Ireland,topicos,Semantic Web and Ontologies,106
+Ireland,topicos,Geochemistry and Geologic Mapping,82
+Ireland,topicos,Quantum Information and Cryptography,78
+Ireland,topicos,Privacy-Preserving Technologies in Data,61
+Ireland,topicos,Bayesian Methods and Mixture Models,49
+Ireland,topicos,Quantum Computing Algorithms and Architecture,46
+Ireland,topicos,Coding theory and cryptography,46
+Ireland,topicos,Topic Modeling,43
+Ireland,topicos,Hate Speech and Cyberbullying Detection,30
+Ireland,topicos,Finite Group Theory Research,28
+Ireland,topicos,Network Security and Intrusion Detection,27
+Ireland,topicos,Sentiment Analysis and Opinion Mining,27
+Ireland,topicos,Evolutionary Algorithms and Applications,27
+Israel,instituicoes,Tel Aviv University,1247
+Israel,instituicoes,Technion – Israel Institute of Technology,1103
+Israel,instituicoes,Ben-Gurion University of the Negev,897
+Israel,instituicoes,Bar-Ilan University,780
+Israel,instituicoes,Hebrew University of Jerusalem,714
+Israel,instituicoes,Weizmann Institute of Science,563
+Israel,instituicoes,University of Haifa,526
+Israel,instituicoes,Meta (United States),204
+Israel,instituicoes,Meta (Israel),202
+Israel,instituicoes,Ariel University,193
+Israel,instituicoes,Centre National de la Recherche Scientifique,181
+Israel,instituicoes,Stanford University,126
+Israel,instituicoes,Microsoft (United States),117
+Israel,instituicoes,Massachusetts Institute of Technology,117
+Israel,instituicoes,University of London,112
+Israel,topicos,Cryptography and Data Security,263
+Israel,topicos,Quantum Information and Cryptography,209
+Israel,topicos,Algorithms and Data Compression,189
+Israel,topicos,Complexity and Algorithms in Graphs,148
+Israel,topicos,Natural Language Processing Techniques,129
+Israel,topicos,Quantum Mechanics and Applications,116
+Israel,topicos,Machine Learning and Algorithms,116
+Israel,topicos,Coding theory and cryptography,109
+Israel,topicos,Topic Modeling,94
+Israel,topicos,Quantum Computing Algorithms and Architecture,75
+Israel,topicos,Cryptographic Implementations and Security,75
+Israel,topicos,Finite Group Theory Research,68
+Israel,topicos,Formal Methods in Verification,66
+Israel,topicos,"Logic, Reasoning, and Knowledge",66
+Israel,topicos,Neural Networks and Applications,64
+Japan,instituicoes,The University of Tokyo,2795
+Japan,instituicoes,"Ministry of Education, Culture, Sports, Science and Technology",1747
+Japan,instituicoes,Kyoto University,1646
+Japan,instituicoes,Tohoku University,1175
+Japan,instituicoes,Institute of Science Tokyo,1120
+Japan,instituicoes,Kyushu University,1052
+Japan,instituicoes,The University of Osaka,1043
+Japan,instituicoes,National Institute of Advanced Industrial Science and Technology,1026
+Japan,instituicoes,Tokyo Institute of Technology,1019
+Japan,instituicoes,Research Organization of Information and Systems,1014
+Japan,instituicoes,Nagoya University,959
+Japan,instituicoes,RIKEN,884
+Japan,instituicoes,Waseda University,814
+Japan,instituicoes,National Institute of Informatics,737
+Japan,instituicoes,University of Tsukuba,721
+Japan,topicos,Educational Robotics and Engineering,2399
+Japan,topicos,Quantum Information and Cryptography,1133
+Japan,topicos,Geological and Geochemical Analysis,841
+Japan,topicos,Quantum Computing Algorithms and Architecture,814
+Japan,topicos,Natural Language Processing Techniques,803
+Japan,topicos,earthquake and tectonic studies,746
+Japan,topicos,Cryptography and Data Security,587
+Japan,topicos,Neural Networks and Applications,558
+Japan,topicos,Seismology and Earthquake Studies,493
+Japan,topicos,Geochemistry and Geologic Mapping,391
+Japan,topicos,Topic Modeling,333
+Japan,topicos,Speech Recognition and Synthesis,327
+Japan,topicos,Coding theory and cryptography,307
+Japan,topicos,Algorithms and Data Compression,299
+Japan,topicos,Metaheuristic Optimization Algorithms Research,295
+Luxembourg,instituicoes,University of Luxembourg,778
+Luxembourg,instituicoes,"Interdisciplinary Centre for Security, Reliability and Trust",114
+Luxembourg,instituicoes,Centre National de la Recherche Scientifique,104
+Luxembourg,instituicoes,Luxembourg Institute of Science and Technology,63
+Luxembourg,instituicoes,Institut des Sciences de l'Information et de leurs Interactions,51
+Luxembourg,instituicoes,Institut national de recherche en sciences et technologies du numérique,49
+Luxembourg,instituicoes,Université Paris-Saclay,34
+Luxembourg,instituicoes,University of London,32
+Luxembourg,instituicoes,Université de Toulouse,23
+Luxembourg,instituicoes,European Center for Geodynamics and Seismology,19
+Luxembourg,instituicoes,Pusan National University,18
+Luxembourg,instituicoes,National Research Fund Luxembourg,17
+Luxembourg,instituicoes,Université de Lorraine,17
+Luxembourg,instituicoes,KU Leuven,17
+Luxembourg,instituicoes,Helmholtz Association of German Research Centres,16
+Luxembourg,topicos,Cryptography and Data Security,57
+Luxembourg,topicos,Cryptographic Implementations and Security,47
+Luxembourg,topicos,Multi-Agent Systems and Negotiation,40
+Luxembourg,topicos,"Logic, Reasoning, and Knowledge",36
+Luxembourg,topicos,Semantic Web and Ontologies,31
+Luxembourg,topicos,Advanced Software Engineering Methodologies,26
+Luxembourg,topicos,Internet Traffic Analysis and Secure E-voting,24
+Luxembourg,topicos,Privacy-Preserving Technologies in Data,21
+Luxembourg,topicos,Cryptography and Residue Arithmetic,21
+Luxembourg,topicos,"Logic, programming, and type systems",19
+Luxembourg,topicos,Coding theory and cryptography,19
+Luxembourg,topicos,Cognitive Abilities and Testing,19
+Luxembourg,topicos,Natural Language Processing Techniques,17
+Luxembourg,topicos,Advanced Thermodynamics and Statistical Mechanics,16
+Luxembourg,topicos,Cognitive Science and Mapping,15
+Mexico,instituicoes,Universidad Nacional Autónoma de México,1425
+Mexico,instituicoes,Instituto Politécnico Nacional,1244
+Mexico,instituicoes,Centro de Investigación y de Estudios Avanzados del Instituto Politécnico Nacional,448
+Mexico,instituicoes,"National Institute of Astrophysics, Optics and Electronics",358
+Mexico,instituicoes,Universidad de Guadalajara,338
+Mexico,instituicoes,Tecnológico de Monterrey,322
+Mexico,instituicoes,Secretariat of Public Education,303
+Mexico,instituicoes,Tecnológico Nacional de México,296
+Mexico,instituicoes,Tecnológico de Estudios Superiores de San Felipe del Progreso,296
+Mexico,instituicoes,Benemérita Universidad Autónoma de Puebla,264
+Mexico,instituicoes,Universidad Autónoma Metropolitana,260
+Mexico,instituicoes,Instituto Tecnológico de Tijuana,218
+Mexico,instituicoes,Universidad del Noreste,198
+Mexico,instituicoes,Centro de Investigación Científica y de Educación Superior de Ensenada,181
+Mexico,instituicoes,Universidad de Guanajuato,174
+Mexico,topicos,Geological and Geochemical Analysis,387
+Mexico,topicos,Quantum Information and Cryptography,249
+Mexico,topicos,Metaheuristic Optimization Algorithms Research,228
+Mexico,topicos,Neural Networks and Applications,204
+Mexico,topicos,Fuzzy Logic and Control Systems,182
+Mexico,topicos,Spanish Linguistics and Language Studies,158
+Mexico,topicos,Geochemistry and Geologic Mapping,151
+Mexico,topicos,Advanced Multi-Objective Optimization Algorithms,129
+Mexico,topicos,Natural Language Processing Techniques,121
+Mexico,topicos,Semantic Web and Ontologies,118
+Mexico,topicos,Evolutionary Algorithms and Applications,98
+Mexico,topicos,Solar Radiation and Photovoltaics,80
+Mexico,topicos,Topic Modeling,77
+Mexico,topicos,"Logic, Reasoning, and Knowledge",77
+Mexico,topicos,Coding theory and cryptography,76
+Netherlands,instituicoes,University of Amsterdam,1634
+Netherlands,instituicoes,Delft University of Technology,1608
+Netherlands,instituicoes,Radboud University Nijmegen,1281
+Netherlands,instituicoes,Utrecht University,1079
+Netherlands,instituicoes,Eindhoven University of Technology,870
+Netherlands,instituicoes,University of Groningen,839
+Netherlands,instituicoes,Leiden University,795
+Netherlands,instituicoes,Vrije Universiteit Amsterdam,752
+Netherlands,instituicoes,University of Twente,661
+Netherlands,instituicoes,Dutch Research Council,641
+Netherlands,instituicoes,NWO-I,550
+Netherlands,instituicoes,Max Planck Society,526
+Netherlands,instituicoes,Maastricht University,491
+Netherlands,instituicoes,Centre National de la Recherche Scientifique,440
+Netherlands,instituicoes,Centrum Wiskunde & Informatica,416
+Netherlands,topicos,Natural Language Processing Techniques,363
+Netherlands,topicos,"Logic, Reasoning, and Knowledge",293
+Netherlands,topicos,"Logic, programming, and type systems",261
+Netherlands,topicos,Semantic Web and Ontologies,238
+Netherlands,topicos,Quantum Computing Algorithms and Architecture,216
+Netherlands,topicos,Quantum Information and Cryptography,214
+Netherlands,topicos,AI in cancer detection,184
+Netherlands,topicos,Bayesian Modeling and Causal Inference,179
+Netherlands,topicos,"Syntax, Semantics, Linguistic Variation",156
+Netherlands,topicos,Multi-Agent Systems and Negotiation,155
+Netherlands,topicos,Phonetics and Phonology Research,129
+Netherlands,topicos,Speech and dialogue systems,121
+Netherlands,topicos,Topic Modeling,120
+Netherlands,topicos,Geochemistry and Geologic Mapping,115
+Netherlands,topicos,Cognitive Science and Mapping,115
+Peru,instituicoes,Pontificia Universidad Católica del Perú,107
+Peru,instituicoes,National University of San Marcos,88
+Peru,instituicoes,Universidad San Pedro,30
+Peru,instituicoes,Universidad Nacional de San Agustin de Arequipa,29
+Peru,instituicoes,National University of Engineering,29
+Peru,instituicoes,Universidad de Lima,28
+Peru,instituicoes,Centre National de la Recherche Scientifique,22
+Peru,instituicoes,Universidad Católica San Pablo,19
+Peru,instituicoes,Universidad Peruana Cayetano Heredia,15
+Peru,instituicoes,Gouvernement de la République française,15
+Peru,instituicoes,Ministère de l'Europe et des Affaires étrangères,15
+Peru,instituicoes,Instituto Geológico Minero y Metalúrgico,15
+Peru,instituicoes,"Ministère de l'Enseignement Supérieur, de la Recherche et de l'Espace",15
+Peru,instituicoes,Institut National des Sciences de l'Univers,15
+Peru,instituicoes,Institut de Recherche pour le Développement,15
+Peru,topicos,Spanish Linguistics and Language Studies,36
+Peru,topicos,Solar Radiation and Photovoltaics,24
+Peru,topicos,Geological and Geochemical Analysis,20
+Peru,topicos,Geochemistry and Geologic Mapping,18
+Peru,topicos,Semantic Web and Ontologies,15
+Peru,topicos,Neural Networks and Applications,13
+Peru,topicos,Quantum Information and Cryptography,11
+Peru,topicos,Quantum Mechanics and Applications,11
+Peru,topicos,Linguistic Studies and Language Acquisition,11
+Peru,topicos,Seismology and Earthquake Studies,9
+Peru,topicos,Natural Language Processing Techniques,8
+Peru,topicos,Photovoltaic System Optimization Techniques,8
+Peru,topicos,Soil Geostatistics and Mapping,7
+Peru,topicos,AI in cancer detection,7
+Peru,topicos,Evolutionary Algorithms and Applications,6
+Slovenia,instituicoes,University of Ljubljana,833
+Slovenia,instituicoes,Jožef Stefan Institute,376
+Slovenia,instituicoes,University of Maribor,326
+Slovenia,instituicoes,University of Primorska,216
+Slovenia,instituicoes,Jožef Stefan International Postgraduate School,132
+Slovenia,instituicoes,Faculty of Media,99
+Slovenia,instituicoes,Faculty of Design,53
+Slovenia,instituicoes,Geological Survey of Slovenia,52
+Slovenia,instituicoes,University of Nova Gorica,49
+Slovenia,instituicoes,"Institute of Mathematics, Physics, and Mechanics",49
+Slovenia,instituicoes,Institute of Information Science,48
+Slovenia,instituicoes,Institute of Criminology,46
+Slovenia,instituicoes,Centre National de la Recherche Scientifique,44
+Slovenia,instituicoes,Research Centre of the Slovenian Academy of Sciences and Arts,36
+Slovenia,instituicoes,Chinese Academy of Sciences,30
+Slovenia,topicos,Natural Language Processing Techniques,114
+Slovenia,topicos,Finite Group Theory Research,96
+Slovenia,topicos,Coding theory and cryptography,68
+Slovenia,topicos,Metaheuristic Optimization Algorithms Research,40
+Slovenia,topicos,Lexicography and Language Studies,39
+Slovenia,topicos,Quantum many-body systems,37
+Slovenia,topicos,Heavy metals in environment,36
+Slovenia,topicos,Educational Robotics and Engineering,35
+Slovenia,topicos,Semantic Web and Ontologies,32
+Slovenia,topicos,Evolutionary Algorithms and Applications,30
+Slovenia,topicos,Topic Modeling,29
+Slovenia,topicos,Linguistic Studies and Language Acquisition,28
+Slovenia,topicos,Fuzzy Logic and Control Systems,27
+Slovenia,topicos,Biomedical Text Mining and Ontologies,26
+Slovenia,topicos,Solar Radiation and Photovoltaics,23
+Ukraine,instituicoes,National Academy of Sciences of Ukraine,911
+Ukraine,instituicoes,Taras Shevchenko National University of Kyiv,405
+Ukraine,instituicoes,National Technical University of Ukraine “Igor Sikorsky Kyiv Polytechnic Institute”,308
+Ukraine,instituicoes,Lviv Polytechnic National University,260
+Ukraine,instituicoes,V. N. Karazin Kharkiv National University,215
+Ukraine,instituicoes,Kharkiv National University of Radio Electronics,157
+Ukraine,instituicoes,"National University ""Kyiv Aviation Institute""",144
+Ukraine,instituicoes,V.M. Glushkov Institute of Cybernetics,131
+Ukraine,instituicoes,"National Technical University ""Kharkiv Polytechnic Institute""",114
+Ukraine,instituicoes,Odesа Polytechnic National University,96
+Ukraine,instituicoes,Institute of Software Systems,94
+Ukraine,instituicoes,Russian Academy of Sciences,85
+Ukraine,instituicoes,Lviv University,84
+Ukraine,instituicoes,Institute of Geological Sciences,75
+Ukraine,instituicoes,National University Zaporizhzhia Polytechnic,62
+Ukraine,topicos,Statistical and Computational Modeling,231
+Ukraine,topicos,Mathematical Control Systems and Analysis,187
+Ukraine,topicos,Advanced Data Processing Techniques,131
+Ukraine,topicos,Neural Networks and Applications,117
+Ukraine,topicos,Cybersecurity and Information Systems,112
+Ukraine,topicos,Coding theory and cryptography,106
+Ukraine,topicos,Semantic Web and Ontologies,84
+Ukraine,topicos,Geochemistry and Geologic Mapping,84
+Ukraine,topicos,Advanced Scientific Research Methods,72
+Ukraine,topicos,Quantum Information and Cryptography,69
+Ukraine,topicos,Natural Language Processing Techniques,69
+Ukraine,topicos,Geological and Geochemical Analysis,63
+Ukraine,topicos,Solar and Space Plasma Dynamics,62
+Ukraine,topicos,Cognitive Science and Mapping,58
+Ukraine,topicos,Mining and Gasification Technologies,54

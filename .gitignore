@@ -57,3 +57,5 @@ deletar/
 
 # arquivos da aula
 material_disciplina/
+# JSON bruto do OpenAlex (regenerável com dados/baixar_openalex.sh)
+dados/raw_openalex/

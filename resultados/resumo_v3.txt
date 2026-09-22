@@ -1,10 +1,16 @@
 === 1. Dados: base + WDI, unidades consistentes ===
 Voice & Accountability (WGI, percentil): 208 de 208 obs | cor(voice, gov) = 0.679
 n = 208 país-ano | países = 37 | zeros de investimento = 17
-cobertura WDI nas 208 obs: manuf_pib 205 originais + 3 preenchidos | manuf_exp 208 | pesq_pm 177 originais + 31 preenchidos | rd_pct_wdi 208
+cobertura WDI nas 208 obs: manuf_pib 205 originais + 0 interpolados + 3 sem valor | manuf_exp 208 | pesq_pm 177 originais + 31 sem valor (não entra no 2º estágio) | rd_pct_wdi 208 | artigos_se_nsf 208
 sanidade: cor(R.D_Percentage da base, GB.XPD.RSDV.GD.ZS do WDI) = 1 | deflator EUA 2013→2021: 0.974 0.991 1 1.01 1.028 1.051 1.068 1.083 1.132
 patentes: contagem recuperada = AI.Patent.Applications × pop; 58% a <0,02 de um inteiro
 manuf_pib sem valor no WDI (ficam fora do 2º estágio): Bulgaria-2018, Bulgaria-2019, Bulgaria-2021
+publicações: Spearman(AI.Publications, OpenAlex IA) = 0.957424046286775 | razão base/OpenAlex mediana 1.45 (quartis 1.14–1.87): mesma ordenação, níveis diferentes, sinal de bases de indexação distintas
+conferência do total: cor(log OpenAlex total, log artigos S&E do WDI) = 0.975
+participação das ciências sociais na produção total: menor em Japan 7%, China 7%, India 9%; maior em Indonesia 45%, Peru 42%, Colombia 40%
+cobertura: 9 países com os 9 anos | 6 com menos de 3 anos (Philippines, Slovenia, Switzerland, Indonesia, Ireland, Italy) | DMUs por ano: 22 23 23 26 26 30 24 18 16
+zeros de investimento: 17 observações em 12 países | Slovenia 1/1, Colombia 1/3, Croatia 1/3, Peru 1/4, Chile 1/5, Malaysia 1/5, Luxembourg 1/6, Romania 2/6, South Africa 1/6, Ukraine 5/6, Greece 1/8, Hungary 1/9
+ausências nas contextuais: manuf_pib 3 | manuf_exp 0 | gov 0 | voice 0 | ln_gdppc 0 | trade 0 | z_score 0 | npl 0 | pesq_pm 31 | artigos_se_nsf 0
 === 2. Descritivas (template lesson1.4) ===
 === 3. Núcleo: FDH, CCR, BCC, folgas — fronteira agrupada (208 DMUs), forma extensiva ===
 S  | eficientes FDH 25.0%  CCR 2.4%  BCC 7.7% | média BCC 0.459 | zeros efic. BCC 23.5% vs não-zeros 6.3%
@@ -12,25 +18,38 @@ T  | eficientes FDH 18.3%  CCR 1.9%  BCC 3.4% | média BCC 0.146 | zeros efic. B
 ST | eficientes FDH 46.6%  CCR 4.8%  BCC 9.1% | média BCC 0.486 | zeros efic. BCC 29.4% vs não-zeros 7.3%
 C  | eficientes FDH 22.6%  CCR 1.9%  BCC 3.8% | média BCC 0.165 | zeros efic. BCC 17.6% vs não-zeros 2.6%
 Spearman BCC: S×T 0.453 | S×C 0.383 | T×C 0.98 | SE(ST) média (sem zeros) 0.593
-BCC-eficientes S: Australia-2013, China-2013, China-2019, China-2020, China-2021, India-2013, India-2016, India-2019, India-2020, Malaysia-2014, Peru-2018, Peru-2021, Romania-2018, Romania-2020, Ukraine-2017, Ukraine-2018
-BCC-eficientes T: Australia-2013, China-2013, China-2020, China-2021, Mexico-2018, Peru-2018, Ukraine-2014
-BCC-eficientes C: Australia-2013, China-2013, China-2020, China-2021, Luxembourg-2016, Mexico-2018, Peru-2018, Ukraine-2014
+BCC-eficientes S: Australia-2013, China-2013, China-2019, China-2020, China-2021, India-2013, India-2016, India-2019, India-2020, Malaysia-2014*, Peru-2018*, Peru-2021, Romania-2018*, Romania-2020, Ukraine-2017*, Ukraine-2018 (* eficiente entre as observações sem investimento)
+BCC-eficientes T: Australia-2013, China-2013, China-2020, China-2021, Mexico-2018, Peru-2018*, Ukraine-2014* (* eficiente entre as observações sem investimento)
+BCC-eficientes C: Australia-2013, China-2013, China-2020, China-2021, Luxembourg-2016*, Mexico-2018, Peru-2018*, Ukraine-2014* (* eficiente entre as observações sem investimento)
 Conversão (C) por país, top 8: China 0.63, Australia 0.54, Peru 0.53, Ukraine 0.49, Japan 0.46, Mexico 0.44, Luxembourg 0.35, United States 0.23
+Conversão (C), top 8 entre os 31 países com 3 anos ou mais: China 0.63, Australia 0.54, Peru 0.53, Ukraine 0.49, Japan 0.46, Mexico 0.44, Luxembourg 0.35, United States 0.23
+Conversão (C) só nos anos com investimento positivo, top 8: China 0.63, Australia 0.54, Japan 0.46, Mexico 0.44, Peru 0.37, United States 0.23, Ukraine 0.22, Luxembourg 0.21 | Spearman com a média de todos os anos = 0.964478764478765
 Conversão (C), Brasil: 0.186 (10º de 37) | cor(C, manuf_pib) por país = 0.089 | cor(gap T−S, log pop) = -0.253
 benchmarks mais usados (BCC ST): Romania-2020 94, India-2013 75, China-2013 66, India-2016 63, India-2019 58, Malaysia-2014 58
 folgas BCC ST: DMUs com folga em investimento 5% (média rel. 0.03), em P&D 6% (média rel. 0.02)
 === 4. Robustez da especificação (BCC, comparação com o núcleo agrupado) ===
 intensiva: eficientes BCC S 7.7% T 4.3% C 4.3% | eficientes em T intensiva: Australia-2013, China-2020, China-2021, Indonesia-2013, Indonesia-2016, Luxembourg-2021, Mexico-2018, South Africa-2014, Ukraine-2014
-         cenario   n efic_pct media spearman_vs_principal
-1    intensiva_S 208    7.692 0.394                 0.117
-2    intensiva_T 208    4.327 0.197                 0.902
-3    intensiva_C 208    4.327 0.208                 0.937
-4       anual_ST 208   36.058 0.700                 0.844
-5   shift_1mi_ST 208    9.135 0.486                 1.000
-6   sem_zeros_ST 191   10.471 0.486                 0.988
-7     T_ate_2019 174    3.448 0.159                 0.993
-8 sem_LUX_SGP_ST 195    9.744 0.495                 1.000
-9     lag_t-1_ST 154    9.091 0.476                 0.888
+sem países de menos de 3 anos: 199 DMUs, 31 países
+ranking de conversão por país, com e sem os zeros: Spearman = 0.94954954954955
+                cenario   n efic_pct media spearman_vs_principal
+1           intensiva_S 208    7.692 0.394                 0.117
+2           intensiva_T 208    4.327 0.197                 0.902
+3           intensiva_C 208    4.327 0.208                 0.937
+4              anual_ST 208   36.058 0.700                 0.844
+5          shift_1mi_ST 208    9.135 0.486                 1.000
+6          sem_zeros_ST 191   10.471 0.486                 0.988
+7            T_ate_2019 174    3.448 0.159                 0.993
+8        sem_LUX_SGP_ST 195    9.744 0.495                 1.000
+9            lag_t-1_ST 154    9.091 0.476                 0.888
+10  sem_paises_curtos_S 199    8.040 0.460                 1.000
+11  sem_paises_curtos_T 199    3.518 0.151                 1.000
+12 sem_paises_curtos_ST 199    9.548 0.488                 1.000
+13  sem_paises_curtos_C 199    4.020 0.170                 1.000
+14          sem_zeros_S 191    8.377 0.463                 0.992
+15          sem_zeros_T 191    5.236 0.161                 0.983
+16          sem_zeros_C 191    6.283 0.193                 0.972
+17              so_PD_S 208    1.923 0.289                 0.792
+18              so_PD_T 208    0.962 0.055                 0.791
 === 5. Outliers: supereficiência de Andersen-Petersen (ST) ===
 supereficiência CRS (ST), top 6: Ukraine-2014 1.81, Malaysia-2014 1.78, Australia-2013 1.27, China-2020 1.27, China-2021 1.18, Romania-2018 1.16
 VRS infactíveis (extremas): 0 DMUs
@@ -61,6 +80,19 @@ Malmquist S (13 países, 2016–2021): média geométrica M = 0.971 | EC = 1.089
 3 2019 0.882 1.080 0.817
 4 2020 1.020 0.899 1.134
 5 2021 0.909 1.774 0.512
+=== 10b. Metafronteira: fronteira global, contemporânea, sequencial e união; lacuna tecnológica (TGR) ===
+S: TGR médio 0.684 | união 0.747 | convexificação média 1.098 | DMUs na metatecnologia não convexa 12%
+S: TGR por ano 2013 0.75 2014 0.61 2015 0.62 2016 0.73 2017 0.58 2018 0.7 2019 0.75 2020 0.76 2021 0.69 | com n igualado em 16: 0.69 0.53 0.57 0.65 0.5 0.61 0.67 0.74 0.69
+T: TGR médio 0.485 | união 0.565 | convexificação média 1.196 | DMUs na metatecnologia não convexa 12%
+T: TGR por ano 2013 0.63 2014 0.36 2015 0.29 2016 0.27 2017 0.35 2018 0.52 2019 0.61 2020 0.83 2021 0.68 | com n igualado em 16: 0.53 0.29 0.24 0.22 0.27 0.39 0.5 0.75 0.68
+ST: TGR médio 0.684 | união 0.774 | convexificação média 1.15 | DMUs na metatecnologia não convexa 13%
+ST: TGR por ano 2013 0.76 2014 0.63 2015 0.61 2016 0.71 2017 0.58 2018 0.7 2019 0.74 2020 0.77 2021 0.69 | com n igualado em 16: 0.71 0.56 0.57 0.63 0.51 0.62 0.66 0.75 0.69
+C: TGR médio 0.488 | união 0.592 | convexificação média 1.268 | DMUs na metatecnologia não convexa 9%
+C: TGR por ano 2013 0.57 2014 0.39 2015 0.3 2016 0.32 2017 0.36 2018 0.54 2019 0.61 2020 0.8 2021 0.62 | com n igualado em 16: 0.49 0.31 0.26 0.27 0.28 0.4 0.51 0.71 0.62
+Malmquist global S (34 países com 2 anos ou mais, contra 13 no subpainel balanceado): M = 1.049 | EC = 1.067 | BPC = 0.983
+decomposição M = EC × BPC: desvio máximo 8.9e-16
+Malmquist 2016→2021 nos 13 países do subpainel: global M = 1.275 | faremalm2 acumulado M = 0.862 | Spearman = 0.703296703296703
+metafronteira por renda (exploratória): S/Alta n=140 TGR=0.65 | S/Média n=68 TGR=0.95 | T/Alta n=140 TGR=0.31 | T/Média n=68 TGR=0.99
 === 11. Ganhos com fusões: blocos regionais (Benchmarking::make.merge / dea.merge, template lesson2.3) ===
                 bloco anos efic_fusao aprendizado harmonia escala
 1 Aliança do Pacífico    1      0.625       0.492    0.925  1.372
@@ -87,43 +119,108 @@ obs. completas para o 2º estágio: 205 de 208
 11  bcc_T manuf_pib > mediana  7.34e-04 0.00893      0.187       0.107
 12  bcc_C manuf_pib > mediana  6.84e-03 0.03230      0.199       0.133
 H1 (manuf_pib) por escore — Tobit e OLS-cluster:
-     escore  variavel    coef      ep      p coef_ols p_cluster
-1     bcc_S manuf_pib 0.00640 0.00487 0.1890  0.00597     0.514
-2     bcc_T manuf_pib 0.00950 0.00422 0.0244  0.00937     0.195
-3     bcc_C manuf_pib 0.00981 0.00449 0.0290  0.00971     0.265
-4 bcc_S_int manuf_pib 0.00352 0.00440 0.4250  0.00425     0.582
-5 bcc_T_int manuf_pib 0.01080 0.00503 0.0322  0.01080     0.291
-6 bcc_C_int manuf_pib 0.01140 0.00520 0.0290  0.01140     0.290
+     escore  variavel    coef      ep      p coef_ols ep_cluster p_cluster
+1     bcc_S manuf_pib 0.00640 0.00487 0.1890  0.00597    0.00913     0.514
+2     bcc_T manuf_pib 0.00950 0.00422 0.0244  0.00937    0.00720     0.195
+3     bcc_C manuf_pib 0.00981 0.00449 0.0290  0.00971    0.00869     0.265
+4 bcc_S_int manuf_pib 0.00352 0.00440 0.4250  0.00425    0.00772     0.582
+5 bcc_T_int manuf_pib 0.01080 0.00503 0.0322  0.01080    0.01020     0.291
+6 bcc_C_int manuf_pib 0.01140 0.00520 0.0290  0.01140    0.01070     0.290
 cor(manuf_pib, voice) = -0.597 | cor(manuf_pib, gov) = -0.204 | voice médio: 13 EPO 78.1 vs demais 63.8
-   escore        contextuais           amostra   n manuf_tobit manuf_p_tobit manuf_p_ols_cluster voice_tobit voice_p_tobit gov_tobit gov_p_tobit
-1   bcc_S            nenhuma             todos 205     0.01240      3.02e-03              0.1890          NA            NA        NA          NA
-2   bcc_S            nenhuma sem 13 paises EPO 136     0.02250      4.48e-04              0.0535          NA            NA        NA          NA
-3   bcc_S      so governanca             todos 205     0.01330      1.42e-03              0.1540          NA            NA   0.08340     0.02500
-4   bcc_S      so governanca sem 13 paises EPO 136     0.02270      3.11e-04              0.0311          NA            NA   0.11600     0.00788
-5   bcc_S           so voice             todos 205     0.00804      1.03e-01              0.4390    -0.00375      9.93e-02        NA          NA
-6   bcc_S           so voice sem 13 paises EPO 136     0.02000      3.83e-02              0.2100    -0.00126      7.30e-01        NA          NA
-7   bcc_S governanca e voice             todos 205     0.00640      1.89e-01              0.5140    -0.00627      8.76e-03   0.11800     0.00242
-8   bcc_S governanca e voice sem 13 paises EPO 136     0.01120      2.52e-01              0.4710    -0.00579      1.34e-01   0.14300     0.00237
-9   bcc_T            nenhuma             todos 205     0.01900      1.92e-07              0.0170          NA            NA        NA          NA
-10  bcc_T            nenhuma sem 13 paises EPO 136     0.02330      8.64e-05              0.0146          NA            NA        NA          NA
-11  bcc_T      so governanca             todos 205     0.01850      4.00e-07              0.0207          NA            NA  -0.04250     0.18800
-12  bcc_T      so governanca sem 13 paises EPO 136     0.02310      8.86e-05              0.0108          NA            NA  -0.05340     0.19600
-13  bcc_T           so voice             todos 205     0.00953      2.31e-02              0.1970    -0.00790      3.68e-05        NA          NA
-14  bcc_T           so voice sem 13 paises EPO 136     0.00417      6.36e-01              0.7640    -0.00940      4.38e-03        NA          NA
-15  bcc_T governanca e voice             todos 205     0.00950      2.44e-02              0.1950    -0.00795      9.82e-05   0.00235     0.94400
-16  bcc_T governanca e voice sem 13 paises EPO 136     0.00485      5.97e-01              0.7450    -0.00905      1.11e-02  -0.01140     0.79300
-17  bcc_C            nenhuma             todos 205     0.01880      1.10e-06              0.0250          NA            NA        NA          NA
-18  bcc_C            nenhuma sem 13 paises EPO 136     0.01980      9.45e-04              0.0315          NA            NA        NA          NA
-19  bcc_C      so governanca             todos 205     0.01830      2.20e-06              0.0322          NA            NA  -0.04510     0.18600
-20  bcc_C      so governanca sem 13 paises EPO 136     0.01970      9.83e-04              0.0246          NA            NA  -0.05030     0.22800
-21  bcc_C           so voice             todos 205     0.00977      2.86e-02              0.2760    -0.00754      2.17e-04        NA          NA
-22  bcc_C           so voice sem 13 paises EPO 136     0.00277      7.58e-01              0.8280    -0.00842      1.23e-02        NA          NA
-23  bcc_C governanca e voice             todos 205     0.00981      2.90e-02              0.2650    -0.00748      5.78e-04  -0.00274     0.93800
-24  bcc_C governanca e voice sem 13 paises EPO 136     0.00355      7.04e-01              0.7950    -0.00801      2.74e-02  -0.01320     0.76700
+   escore                   contextuais           amostra   n manuf_tobit manuf_p_tobit manuf_p_ols_cluster voice_tobit voice_p_tobit gov_tobit gov_p_tobit
+1   bcc_S                       nenhuma             todos 205     0.01240      3.02e-03              0.1890          NA            NA        NA          NA
+2   bcc_S                       nenhuma sem 13 paises EPO 136     0.02250      4.48e-04              0.0535          NA            NA        NA          NA
+3   bcc_S                 so governanca             todos 205     0.01330      1.42e-03              0.1540          NA            NA   0.08340     0.02500
+4   bcc_S                 so governanca sem 13 paises EPO 136     0.02270      3.11e-04              0.0311          NA            NA   0.11600     0.00788
+5   bcc_S                      so voice             todos 205     0.00804      1.03e-01              0.4390   -0.003750      9.93e-02        NA          NA
+6   bcc_S                      so voice sem 13 paises EPO 136     0.02000      3.83e-02              0.2100   -0.001260      7.30e-01        NA          NA
+7   bcc_S            governanca e voice             todos 205     0.00640      1.89e-01              0.5140   -0.006270      8.76e-03   0.11800     0.00242
+8   bcc_S            governanca e voice sem 13 paises EPO 136     0.01120      2.52e-01              0.4710   -0.005790      1.34e-01   0.14300     0.00237
+9   bcc_S      governanca, voice e STEM             todos 205     0.00617      2.18e-01              0.5330   -0.006000      3.17e-02   0.11300     0.02400
+10  bcc_S      governanca, voice e STEM sem 13 paises EPO 136     0.01170      2.32e-01              0.4360   -0.007420      8.90e-02   0.17500     0.00444
+11  bcc_S governanca, voice e IA prévia             todos 205     0.00609      1.97e-01              0.5430   -0.001180      6.64e-01   0.07220     0.07030
+12  bcc_S governanca, voice e IA prévia sem 13 paises EPO 136     0.00696      4.64e-01              0.6440   -0.001270      7.49e-01   0.09030     0.05970
+13  bcc_T                       nenhuma             todos 205     0.01900      1.92e-07              0.0170          NA            NA        NA          NA
+14  bcc_T                       nenhuma sem 13 paises EPO 136     0.02330      8.64e-05              0.0146          NA            NA        NA          NA
+15  bcc_T                 so governanca             todos 205     0.01850      4.00e-07              0.0207          NA            NA  -0.04250     0.18800
+16  bcc_T                 so governanca sem 13 paises EPO 136     0.02310      8.86e-05              0.0108          NA            NA  -0.05340     0.19600
+17  bcc_T                      so voice             todos 205     0.00953      2.31e-02              0.1970   -0.007900      3.68e-05        NA          NA
+18  bcc_T                      so voice sem 13 paises EPO 136     0.00417      6.36e-01              0.7640   -0.009400      4.38e-03        NA          NA
+19  bcc_T            governanca e voice             todos 205     0.00950      2.44e-02              0.1950   -0.007950      9.82e-05   0.00235     0.94400
+20  bcc_T            governanca e voice sem 13 paises EPO 136     0.00485      5.97e-01              0.7450   -0.009050      1.11e-02  -0.01140     0.79300
+21  bcc_T      governanca, voice e STEM             todos 205     0.00466      2.55e-01              0.4520   -0.002000      3.76e-01  -0.12400     0.00204
+22  bcc_T      governanca, voice e STEM sem 13 paises EPO 136     0.00308      7.19e-01              0.7930   -0.000790      8.35e-01  -0.16800     0.00181
+23  bcc_T governanca, voice e IA prévia             todos 205     0.00955      2.33e-02              0.1870   -0.009180      1.34e-04   0.01310     0.70900
+24  bcc_T governanca, voice e IA prévia sem 13 paises EPO 136     0.00454      6.24e-01              0.7740   -0.008680      2.31e-02  -0.01560     0.73500
+25  bcc_C                       nenhuma             todos 205     0.01880      1.10e-06              0.0250          NA            NA        NA          NA
+26  bcc_C                       nenhuma sem 13 paises EPO 136     0.01980      9.45e-04              0.0315          NA            NA        NA          NA
+27  bcc_C                 so governanca             todos 205     0.01830      2.20e-06              0.0322          NA            NA  -0.04510     0.18600
+28  bcc_C                 so governanca sem 13 paises EPO 136     0.01970      9.83e-04              0.0246          NA            NA  -0.05030     0.22800
+29  bcc_C                      so voice             todos 205     0.00977      2.86e-02              0.2760   -0.007540      2.17e-04        NA          NA
+30  bcc_C                      so voice sem 13 paises EPO 136     0.00277      7.58e-01              0.8280   -0.008420      1.23e-02        NA          NA
+31  bcc_C            governanca e voice             todos 205     0.00981      2.90e-02              0.2650   -0.007480      5.78e-04  -0.00274     0.93800
+32  bcc_C            governanca e voice sem 13 paises EPO 136     0.00355      7.04e-01              0.7950   -0.008010      2.74e-02  -0.01320     0.76700
+33  bcc_C      governanca, voice e STEM             todos 205     0.00509      2.47e-01              0.4840   -0.001690      4.87e-01  -0.12600     0.00360
+34  bcc_C      governanca, voice e STEM sem 13 paises EPO 136     0.00190      8.29e-01              0.8490   -0.000346      9.30e-01  -0.15800     0.00422
+35  bcc_C governanca, voice e IA prévia             todos 205     0.00987      2.74e-02              0.2560   -0.008960      4.63e-04   0.01010     0.78600
+36  bcc_C governanca, voice e IA prévia sem 13 paises EPO 136     0.00303      7.48e-01              0.8300   -0.007400      5.71e-02  -0.02000     0.67000
+   espec_tobit espec_p_tobit
+1           NA            NA
+2           NA            NA
+3           NA            NA
+4           NA            NA
+5           NA            NA
+6           NA            NA
+7           NA            NA
+8           NA            NA
+9       0.0609      8.52e-01
+10     -0.3260      4.26e-01
+11      8.8900      4.19e-04
+12     10.0000      8.90e-04
+13          NA            NA
+14          NA            NA
+15          NA            NA
+16          NA            NA
+17          NA            NA
+18          NA            NA
+19          NA            NA
+20          NA            NA
+21      1.3300      5.61e-07
+22      1.6000      9.14e-06
+23     -2.1500      3.36e-01
+24      0.7970      7.86e-01
+25          NA            NA
+26          NA            NA
+27          NA            NA
+28          NA            NA
+29          NA            NA
+30          NA            NA
+31          NA            NA
+32          NA            NA
+33      1.2900      5.65e-06
+34      1.4900      6.13e-05
+35     -2.5800      2.78e-01
+36      1.3000      6.63e-01
 dea.env.robust S linear (7s): sigma = 4.14 | beta manuf_pib = -0.272 [-0.624; 0.073]
 SW alg. 2 em log(delta) S (6s, 500/500 réplicas ok): sigma 0.55 | beta manuf_pib = -0.0159 [-0.0403; 0.0091] | beta voice = 0.0130 [0.0011; 0.0265] (beta < 0 = menos ineficiência) | significativos: gov, voice, ln_gdppc, npl, tend
 dea.env.robust T linear (4s): sigma = 735.17 → INSTÁVEL (delta com cauda pesada; usar a versão em log) | beta manuf_pib = -482.347 [-1118.672; -823.824]
-SW alg. 2 em log(delta) T (6s, 500/500 réplicas ok): sigma 1.46 | beta manuf_pib = -0.0965 [-0.1528; -0.0306] | beta voice = 0.0449 [0.0128; 0.0826] (beta < 0 = menos ineficiência) | significativos: manuf_pib, manuf_exp, voice, z_score, zero_inv
+SW alg. 2 em log(delta) T (5s, 500/500 réplicas ok): sigma 1.46 | beta manuf_pib = -0.0965 [-0.1528; -0.0306] | beta voice = 0.0449 [0.0128; 0.0826] (beta < 0 = menos ineficiência) | significativos: manuf_pib, manuf_exp, voice, z_score, zero_inv
 dea.env.robust C linear (4s): sigma = 331.20 → INSTÁVEL (delta com cauda pesada; usar a versão em log) | beta manuf_pib = -170.947 [-482.068; -308.253]
 SW alg. 2 em log(delta) C (6s, 500/500 réplicas ok): sigma 1.35 | beta manuf_pib = -0.0853 [-0.1534; -0.0303] | beta voice = 0.0469 [0.0191; 0.0786] (beta < 0 = menos ineficiência) | significativos: manuf_pib, manuf_exp, voice, ln_gdppc, trade, z_score, zero_inv
+Nuances entre modelos (sentido e nº de estimadores significativos a 5%; + = mais eficiência):
+                          contextual  C  S  T
+1                Comércio (% do PIB) −2 −1 −1
+2          Empréstimos inadimplentes ·0 +3 ·0
+3                Governança (índice) ·0 +2 ·0
+4          Investimento igual a zero +3 ·0 +3
+5              Manufatura (% do PIB) +2 ·0 +2
+6  Manufaturados (% das exportações) −2 ·0 −2
+7                          Tendência ·0 +2 ·0
+8            Voz e responsabilização −2 −2 −2
+9                   Z-score bancário +3 ·0 +2
+10                 ln PIB per capita +1 −2 ·0
+=== 15b. Casos discutidos no manuscrito ===
+casos: 14 países, 78 observações | eficientes em C sem investimento: Luxembourg-2016, Peru-2018, Ukraine-2014
+patentes de IA × depósitos na base (médias por país): cor(log pat, log residentes) = 0.881 | cor(log pat, log não residentes) = 0.706
+razão patentes de IA / depósitos de residentes: mediana 5.25 por mil nos 13 países que depositam via EPO/PCT contra 8.32 por mil nos demais (valores sobre médias por país)
 === Fim: 0.9 min | erros: 0 (ver resultados/log_erros.txt) ===

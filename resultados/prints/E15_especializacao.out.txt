@@ -1,0 +1,13 @@
+Spearman(AI.Publications, artigos de IA no OpenAlex) = 0.957 | razão mediana 1.45 
+    Country exatas_e_vida ciencias_sociais  ia
+1     China          74.8              6.9 3.6
+2   Ukraine          65.7             19.0 1.8
+3 Singapore          62.8             12.9 4.2
+4     India          61.8              9.3 3.2
+5     Japan          59.6              6.9 2.4
+   Country exatas_e_vida ciencias_sociais  ia
+1    Chile          43.2             35.4 1.7
+2  Croatia          39.0             39.3 1.7
+3   Brazil          38.7             38.4 1.4
+4 Colombia          35.8             39.8 1.1
+5     Peru          33.4             42.3 0.7
