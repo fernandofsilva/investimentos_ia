@@ -15,10 +15,11 @@
 #   dados/AI_INVESTMENT.csv       base principal, 208 país-ano
 #   dados/wdi_contextuais.csv     contextuais do World Bank (WDI)
 #   dados/wgi.voice_accountability.csv  Voice & Accountability (WGI)
+#   dados/openalex_publicacoes.csv      publicações por domínio (opcional)
 #
 # Saídas:
 #   resultados/base_v3.csv        base tratada
-#   resultados/t01..t19*.csv      tabelas numeradas
+#   resultados/t01..t28*.csv      tabelas numeradas
 #   resultados/resumo_v3.txt      log com os números citados no relatório
 #   resultados/log_erros.txt      blocos que falharam, se houver
 #   resultados/figuras/fig*.png   figuras
@@ -62,6 +63,8 @@ kEnvL2 <- if (kRapido) 500 else 2000  # laço 2 de rDEA::dea.env.robust
 kShiftUsd <- 0.5e6                    # metade do menor investimento positivo
 kAnoBase <- 2013                      # origem da tendência temporal
 kTolEfic <- 1e-6                      # tolerância para "escore igual a 1"
+kMinAnosPais <- 3                     # anos mínimos para entrar no ranking
+kSubamostraB <- if (kRapido) 100 else 200  # sorteios do TGR com n igualado
 kDirResultados <- "resultados"
 kDirFiguras <- file.path("resultados", "figuras")
 kArquivoLog <- file.path(kDirResultados, "log_erros.txt")
@@ -70,6 +73,13 @@ kArquivoLog <- file.path(kDirResultados, "log_erros.txt")
 kPaisesEpo <- c("Switzerland", "Netherlands", "Belgium", "Ireland", "Norway",
                 "Israel", "France", "Austria", "United Kingdom", "Portugal",
                 "Italy", "Spain", "Greece")
+
+# Países discutidos como casos no manuscrito: os do topo do ranking de
+# conversão, os da cauda (que depositam patente fora do escritório nacional) e
+# o Brasil, do diagnóstico setorial.
+kPaisesCaso <- c("Peru", "Mexico", "Slovenia", "Ukraine", "Luxembourg",
+                 "Japan", "China", "Israel", "France", "United Kingdom",
+                 "Switzerland", "Ireland", "Netherlands", "Brazil")
 
 # Blocos usados na análise de fusões (consórcios regionais de P&D em IA).
 kBlocosRegionais <- list(
@@ -339,7 +349,128 @@ SimarWilsonLog <- function(x, y, z, l1 = 50, l2 = 500, alpha = 0.05) {
   intervalos <- t(apply(betas, 2, quantile, c(alpha / 2, 1 - alpha / 2),
                         na.rm = TRUE))
   list(beta = beta2, ci = intervalos, sigma = sigma2, delta = delta,
-       delta.bc = delta.bc, n.boot.ok = sum(complete.cases(betas)))
+       delta.bc = delta.bc, betas = betas,
+       n.boot.ok = sum(complete.cases(betas)))
+}
+
+EficienciaPorGrupo <- function(x, y, grupo, Referencia = NULL) {
+  # Eficiência de Farrell (produto, VRS) contra a fronteira do próprio grupo.
+  #
+  # Args:
+  #   x: matriz de insumos, DMUs nas linhas.
+  #   y: matriz de produtos, DMUs nas linhas.
+  #   grupo: vetor que define a fronteira de cada DMU (ano, faixa de renda).
+  #   Referencia: função opcional que recebe o rótulo do grupo e devolve os
+  #     índices das DMUs de referência; permite a fronteira sequencial
+  #     (anos <= t). Quando NULL, a referência é o próprio grupo.
+  #
+  # Returns:
+  #   Vetor de eficiências de Farrell, sempre >= 1.
+  resultado <- rep(NA_real_, nrow(x))
+  for (g in unique(grupo)) {
+    avaliadas <- which(grupo == g)
+    referencia <- if (is.null(Referencia)) avaliadas else Referencia(g)
+    resultado[avaliadas] <- eff(dea(x[avaliadas, , drop = FALSE],
+                                    y[avaliadas, , drop = FALSE],
+                                    RTS = "vrs", ORIENTATION = "out",
+                                    XREF = x[referencia, , drop = FALSE],
+                                    YREF = y[referencia, , drop = FALSE]))
+  }
+  resultado
+}
+
+EficienciaUniao <- function(x, y, grupo) {
+  # Metafronteira como união (não convexa) das tecnologias de grupo.
+  #
+  # Para cada DMU, toma a maior eficiência de Farrell entre as fronteiras de
+  # grupo em que o programa é factível. A fronteira agrupada é a versão
+  # convexificada dessa união (Kerstens, O'Donnell & Van de Woestyne, 2019).
+  #
+  # Args:
+  #   x: matriz de insumos.
+  #   y: matriz de produtos.
+  #   grupo: vetor que define as tecnologias de grupo.
+  #
+  # Returns:
+  #   Vetor de eficiências de Farrell contra a união das fronteiras.
+  por.grupo <- sapply(unique(grupo), function(g) {
+    referencia <- which(grupo == g)
+    eff(dea(x, y, RTS = "vrs", ORIENTATION = "out",
+            XREF = x[referencia, , drop = FALSE],
+            YREF = y[referencia, , drop = FALSE]))
+  })
+  apply(por.grupo, 1, function(linha) max(linha[is.finite(linha)]))
+}
+
+TgrSubamostrado <- function(x, y, ano, eff.global, n.alvo, b = kSubamostraB) {
+  # Lacuna tecnológica por ano com fronteiras contemporâneas de n igualado.
+  #
+  # Anos com poucas DMUs têm eficiência contemporânea inflada, o que rebaixa a
+  # lacuna por razão amostral. Sortear sempre n.alvo DMUs separa o gap
+  # tecnológico desse viés de dimensionalidade.
+  #
+  # Args:
+  #   x: matriz de insumos.
+  #   y: matriz de produtos.
+  #   ano: vetor do ano de cada DMU.
+  #   eff.global: eficiências contra a fronteira agrupada.
+  #   n.alvo: número de DMUs sorteadas em cada ano.
+  #   b: número de sorteios.
+  #
+  # Returns:
+  #   Vetor com a lacuna média de cada ano, na ordem de sort(unique(ano)).
+  # O estado do gerador é salvo e restaurado para que os sorteios daqui não
+  # desloquem a sequência aleatória dos bootstraps estimados depois.
+  estado <- if (exists(".Random.seed", .GlobalEnv)) {
+    get(".Random.seed", .GlobalEnv)
+  } else {
+    NULL
+  }
+  on.exit(if (!is.null(estado)) assign(".Random.seed", estado, .GlobalEnv))
+  sapply(sort(unique(ano)), function(a) {
+    linhas <- which(ano == a)
+    replicas <- replicate(b, {
+      amostra <- if (length(linhas) > n.alvo) {
+        sample(linhas, n.alvo)
+      } else {
+        linhas
+      }
+      eficiencias <- eff(dea(x[amostra, , drop = FALSE],
+                             y[amostra, , drop = FALSE],
+                             RTS = "vrs", ORIENTATION = "out"))
+      mean(eficiencias / eff.global[amostra])
+    })
+    mean(replicas)
+  })
+}
+
+Estrelas <- function(p) {
+  # Marcas de significância no padrão das tabelas de periódico.
+  #
+  # Args:
+  #   p: vetor de valores-p.
+  #
+  # Returns:
+  #   Vetor de caracteres com ***, ** , * ou vazio.
+  ifelse(is.na(p), "",
+         ifelse(p < 0.01, "***",
+                ifelse(p < 0.05, "**", ifelse(p < 0.10, "*", ""))))
+}
+
+FormataCelula <- function(coeficiente, erro.padrao, p, digitos = 3) {
+  # Célula "coeficiente*** (erro padrão)" da tabela de regressões.
+  #
+  # Args:
+  #   coeficiente: estimativa pontual.
+  #   erro.padrao: erro padrão da estimativa.
+  #   p: valor-p usado nas estrelas.
+  #   digitos: casas decimais.
+  #
+  # Returns:
+  #   Vetor de caracteres; vazio onde a estimativa é NA.
+  formato <- paste0("%.", digitos, "f%s (%.", digitos, "f)")
+  ifelse(is.na(coeficiente), "",
+         sprintf(formato, coeficiente, Estrelas(p), erro.padrao))
 }
 
 ComparaCenario <- function(nome, linhas, escores.novos, escores.ref) {
@@ -418,14 +549,15 @@ dados <- base.bruta %>%
          zero_inv = AI.Investment == 0) %>%
   left_join(deflator.eua, by = "Year") %>%
   left_join(select(wdi, Country, Year, manuf_pib, ind_pib, manuf_exp,
-                   pesq_pm, rd_pct_wdi),
+                   pesq_pm, rd_pct_wdi, artigos_se_nsf),
             by = c("Country", "Year")) %>%
   group_by(Country) %>%
   arrange(Year, .by_group = TRUE) %>%
+  # Só manuf_pib é interpolada, porque entra no segundo estágio; pesq_pm fica
+  # como vem do WDI, com a marca de ausência, e não é usada nas regressões.
   mutate(manuf_pib_na = is.na(manuf_pib),
          pesq_pm_na = is.na(pesq_pm),
-         manuf_pib = PreencheSerie(manuf_pib, Year),
-         pesq_pm = PreencheSerie(pesq_pm, Year)) %>%
+         manuf_pib = PreencheSerie(manuf_pib, Year)) %>%
   ungroup() %>%
   mutate(inv_const = AI.Investment / defl15,  # US$ constantes de 2015
          inv_usd = inv_const + kShiftUsd,     # insumo 1, forma extensiva
@@ -459,10 +591,12 @@ Nota("n = ", nrow(dados), " país-ano | países = ",
      n_distinct(dados$Country), " | zeros de investimento = ",
      sum(dados$zero_inv))
 Nota("cobertura WDI nas 208 obs: manuf_pib ", sum(!dados$manuf_pib_na),
-     " originais + ", sum(dados$manuf_pib_na), " preenchidos | manuf_exp ",
+     " originais + ", sum(dados$manuf_pib_na & !is.na(dados$manuf_pib)),
+     " interpolados + ", sum(is.na(dados$manuf_pib)), " sem valor | manuf_exp ",
      sum(!is.na(dados$manuf_exp)), " | pesq_pm ", sum(!dados$pesq_pm_na),
-     " originais + ", sum(dados$pesq_pm_na), " preenchidos | rd_pct_wdi ",
-     sum(!is.na(dados$rd_pct_wdi)))
+     " originais + ", sum(dados$pesq_pm_na), " sem valor (não entra no 2º ",
+     "estágio) | rd_pct_wdi ", sum(!is.na(dados$rd_pct_wdi)),
+     " | artigos_se_nsf ", sum(!is.na(dados$artigos_se_nsf)))
 Nota("sanidade: cor(R.D_Percentage da base, GB.XPD.RSDV.GD.ZS do WDI) = ",
      round(cor(dados$R.D_Percentage, dados$rd_pct_wdi,
                use = "complete.obs"), 3),
@@ -476,7 +610,163 @@ if (any(is.na(dados$manuf_pib))) {
   Nota("manuf_pib sem valor no WDI (ficam fora do 2º estágio): ",
        paste(dados$Country_Year[is.na(dados$manuf_pib)], collapse = ", "))
 }
+# 1b. Conferência das publicações e especialização do sistema ---------
+
+# A segunda sessão observou que a variável de publicações cobre um recorte da
+# produção do país, e pediu a participação desse recorte no total. O arquivo
+# gerado por dados/baixar_openalex.sh traz, do OpenAlex, o total de artigos
+# por país e ano, a repartição por domínio do conhecimento e os artigos de
+# inteligência artificial. Serve a duas coisas: conferir AI.Publications
+# contra uma fonte independente e medir a especialização do sistema
+# científico, que entra no segundo estágio apenas como sensibilidade.
+
+if (file.exists("dados/openalex_publicacoes.csv")) {
+  Bloco("openalex", {
+    openalex <- read_csv("dados/openalex_publicacoes.csv",
+                         show_col_types = FALSE)
+    # Especialização anterior ao período analisado: predeterminada em relação
+    # aos produtos do modelo, ao contrário da participação contemporânea.
+    ai.share.pre <- openalex %>%
+      filter(Year <= 2012) %>%
+      group_by(Country) %>%
+      summarise(ai_share_pre = sum(ai_qualquer) / sum(total),
+                .groups = "drop")
+    openalex.painel <- openalex %>%
+      filter(Year >= kAnoBase) %>%
+      transmute(Country, Year,
+                oa_total = total,
+                oa_ai = ai_qualquer,
+                stem_share = (physical + life) / total,
+                social_share = social / total,
+                ai_share_oa = ai_qualquer / total)
+    dados <- dados %>%
+      left_join(openalex.painel, by = c("Country", "Year")) %>%
+      left_join(ai.share.pre, by = "Country")
+
+    conferencia <- dados %>%
+      transmute(Country, Year, pubs, oa_ai, oa_total, artigos_se_nsf,
+                razao_base_openalex = pubs / oa_ai,
+                ai_share_oa, stem_share, social_share)
+    Salva(mutate(conferencia, across(where(is.numeric), ~ signif(.x, 4))),
+          "t28_conferencia_publicacoes")
+    Nota("publicações: Spearman(AI.Publications, OpenAlex IA) = ",
+         Spearman(dados$pubs, dados$oa_ai),
+         " | razão base/OpenAlex mediana ",
+         round(median(dados$pubs / dados$oa_ai), 2), " (quartis ",
+         round(quantile(dados$pubs / dados$oa_ai, 0.25), 2), "–",
+         round(quantile(dados$pubs / dados$oa_ai, 0.75), 2),
+         "): mesma ordenação, níveis diferentes, sinal de bases de ",
+         "indexação distintas")
+    Nota("conferência do total: cor(log OpenAlex total, log artigos S&E do ",
+         "WDI) = ",
+         round(cor(log(dados$oa_total), log(dados$artigos_se_nsf),
+                   use = "complete.obs"), 3))
+    extremos <- dados %>%
+      group_by(Country) %>%
+      summarise(stem = mean(stem_share), social = mean(social_share),
+                ai = mean(ai_share_oa), .groups = "drop") %>%
+      arrange(social)
+    Nota("participação das ciências sociais na produção total: menor em ",
+         paste(sprintf("%s %.0f%%", head(extremos$Country, 3),
+                       100 * head(extremos$social, 3)), collapse = ", "),
+         "; maior em ",
+         paste(sprintf("%s %.0f%%", rev(tail(extremos$Country, 3)),
+                       100 * rev(tail(extremos$social, 3))),
+               collapse = ", "))
+
+    figura <- extremos %>%
+      mutate(Country = fct_reorder(Country, stem)) %>%
+      pivot_longer(c(stem, social), names_to = "recorte",
+                   values_to = "participacao") %>%
+      mutate(recorte = recode(recorte,
+                              stem = "exatas e da vida",
+                              social = "ciências sociais")) %>%
+      ggplot(aes(participacao, Country, fill = recorte)) +
+      geom_col(position = "dodge") +
+      theme_bw() +
+      theme(legend.position = "top") +
+      labs(x = "participação na produção total de artigos (OpenAlex)",
+           y = NULL, fill = NULL)
+    ggsave(file.path(kDirFiguras, "fig14_especializacao.png"), figura,
+           width = 7, height = 8, dpi = 150)
+  })
+} else {
+  Nota("dados/openalex_publicacoes.csv ausente: rode ",
+       "bash dados/baixar_openalex.sh para a conferência das publicações")
+}
+
 Salva(dados, "base_v3")
+
+# 1c. Auditoria da base: cobertura e ausências --------------------------
+
+# A orientação da segunda sessão pede a base mais compacta possível com o
+# menor número de ausências: quantos anos cada país tem, onde estão os zeros
+# de investimento e quais contextuais faltam antes de qualquer preenchimento.
+
+Bloco("auditoria-base", {
+  cobertura <- dados %>%
+    group_by(Country) %>%
+    summarise(n_anos = n(),
+              primeiro = min(Year),
+              ultimo = max(Year),
+              anos = paste(Year, collapse = " "),
+              n_zeros = sum(zero_inv),
+              anos_zero = paste(Year[zero_inv], collapse = " "),
+              no_ranking = n() >= kMinAnosPais,
+              .groups = "drop") %>%
+    arrange(n_anos, Country)
+  Salva(cobertura, "t21_cobertura_pais_ano")
+  curtos <- cobertura$Country[!cobertura$no_ranking]
+  Nota("cobertura: ", sum(cobertura$n_anos == 9), " países com os 9 anos | ",
+       length(curtos), " com menos de ", kMinAnosPais, " anos (",
+       paste(curtos, collapse = ", "), ") | DMUs por ano: ",
+       paste(table(dados$Year), collapse = " "))
+  Nota("zeros de investimento: ", sum(dados$zero_inv), " observações em ",
+       sum(cobertura$n_zeros > 0), " países | ",
+       paste(sprintf("%s %d/%d", cobertura$Country[cobertura$n_zeros > 0],
+                     cobertura$n_zeros[cobertura$n_zeros > 0],
+                     cobertura$n_anos[cobertura$n_zeros > 0]),
+             collapse = ", "))
+
+  contextuais.auditadas <- c(manuf_pib = "manuf_pib", manuf_exp = "manuf_exp",
+                             gov = "gov", voice = "voice",
+                             ln_gdppc = "ln_gdppc", trade = "Trade_Percentage",
+                             z_score = "Z_Score",
+                             npl = "Non.performing.Loans",
+                             pesq_pm = "pesq_pm",
+                             artigos_se_nsf = "artigos_se_nsf")
+  na.contextuais <- map_dfr(names(contextuais.auditadas), function(v) {
+    faltas <- is.na(dados[[contextuais.auditadas[[v]]]])
+    tibble(variavel = v,
+           n_na = sum(faltas),
+           paises_na = paste(unique(dados$Country[faltas]), collapse = ", "),
+           usada_2o_estagio = !v %in% c("pesq_pm", "artigos_se_nsf"))
+  })
+  Salva(na.contextuais, "t22_na_contextuais")
+  Nota("ausências nas contextuais: ",
+       paste(sprintf("%s %d", na.contextuais$variavel, na.contextuais$n_na),
+             collapse = " | "))
+
+  figura <- dados %>%
+    transmute(Country, Year,
+              status = ifelse(zero_inv, "investimento = 0", "observado")) %>%
+    complete(Country, Year = 2013:2021,
+             fill = list(status = "sem observação")) %>%
+    mutate(Country = factor(Country, levels = rev(cobertura$Country)),
+           status = factor(status, levels = c("observado",
+                                              "investimento = 0",
+                                              "sem observação"))) %>%
+    ggplot(aes(factor(Year), Country, fill = status)) +
+    geom_tile(colour = "white", linewidth = 0.4) +
+    scale_fill_manual(values = c("observado" = "grey35",
+                                 "investimento = 0" = "firebrick",
+                                 "sem observação" = "grey93")) +
+    theme_bw() +
+    theme(legend.position = "top") +
+    labs(x = NULL, y = NULL, fill = NULL)
+  ggsave(file.path(kDirFiguras, "fig12_cobertura_pais_ano.png"), figura,
+         width = 6.5, height = 8, dpi = 150)
+})
 
 # 2. Descritivas (template lesson1.4) -----------------------------------
 
@@ -571,26 +861,51 @@ Nota("Spearman BCC: S×T ",
      round(Spearman(escores$bcc_T, escores$bcc_C), 3),
      " | SE(ST) média (sem zeros) ",
      round(mean(escores$se_ST, na.rm = TRUE), 3))
+# Sob retornos variáveis, uma observação sem investimento só pode ser
+# envelopada por outras sem investimento: a de menor gasto em P&D entre elas
+# é eficiente por construção. O asterisco marca esses casos.
 for (k in c("S", "T", "C")) {
   na.fronteira <- escores[[paste0("bcc_", k)]] >= 1 - kTolEfic
-  Nota("BCC-eficientes ", k, ": ",
-       paste(escores$Country_Year[na.fronteira], collapse = ", "))
+  rotulos <- paste0(escores$Country_Year[na.fronteira],
+                    ifelse(escores$zero_inv[na.fronteira], "*", ""))
+  Nota("BCC-eficientes ", k, ": ", paste(rotulos, collapse = ", "),
+       " (* eficiente entre as observações sem investimento)")
 }
 
+# O ranking por país só é informativo onde há anos suficientes, e as médias
+# calculadas apenas sobre os anos com investimento positivo separam o
+# desempenho do efeito de âncora das observações sem investimento.
 medias.pais <- escores %>%
   group_by(Country) %>%
   summarise(n = n(),
+            n_zeros = sum(zero_inv),
+            bcc_T_pos = ifelse(all(zero_inv), NA_real_,
+                               mean(bcc_T[!zero_inv])),
+            bcc_C_pos = ifelse(all(zero_inv), NA_real_,
+                               mean(bcc_C[!zero_inv])),
             across(c(bcc_S, bcc_T, bcc_ST, bcc_C, ccr_ST, se_ST),
                    ~ mean(.x, na.rm = TRUE)),
             manuf_pib = mean(manuf_pib),
             .groups = "drop") %>%
-  mutate(gap_TS = bcc_T - bcc_S) %>%
+  mutate(gap_TS = bcc_T - bcc_S,
+         no_ranking = n >= kMinAnosPais) %>%
   arrange(desc(bcc_C))
 Salva(mutate(medias.pais, across(where(is.numeric), ~ round(.x, 3))),
       "t03_medias_pais")
 Nota("Conversão (C) por país, top 8: ",
      paste(head(medias.pais$Country, 8),
            round(head(medias.pais$bcc_C, 8), 2), collapse = ", "))
+ranking.longo <- filter(medias.pais, no_ranking)
+Nota("Conversão (C), top 8 entre os ", nrow(ranking.longo), " países com ",
+     kMinAnosPais, " anos ou mais: ",
+     paste(head(ranking.longo$Country, 8),
+           round(head(ranking.longo$bcc_C, 8), 2), collapse = ", "))
+Nota("Conversão (C) só nos anos com investimento positivo, top 8: ",
+     paste(head(arrange(medias.pais, desc(bcc_C_pos))$Country, 8),
+           round(head(arrange(medias.pais, desc(bcc_C_pos))$bcc_C_pos, 8), 2),
+           collapse = ", "),
+     " | Spearman com a média de todos os anos = ",
+     Spearman(medias.pais$bcc_C, medias.pais$bcc_C_pos))
 # A população precisa ser reordenada com match(), porque medias.pais está
 # ordenada por bcc_C e o agregado por país sai em ordem alfabética.
 pop.pais <- escores %>%
@@ -778,6 +1093,63 @@ Bloco("rob-lag", {
                             y.ambos[linhas, ], RTS = "vrs",
                             ORIENTATION = "out")),
                  escores$bcc_ST)
+})
+
+# Cenários pedidos na segunda sessão: a base "de cirurgião", sem os países
+# com um ou dois anos observados, e a leitura literal dos zeros, com os três
+# modelos reestimados sem eles e com um modelo de insumo único (só P&D), que
+# põe todas as 208 observações no mesmo conjunto de comparação.
+
+Bloco("rob-paises-curtos", {
+  anos.por.pais <- table(dados$Country)
+  longos <- names(anos.por.pais)[anos.por.pais >= kMinAnosPais]
+  linhas <- which(dados$Country %in% longos)
+  for (k in c("S", "T", "ST", "C")) {
+    x.modelo <- if (k == "C") x.conversao else x.extensivo
+    y.modelo <- switch(k, S = y.ciencia, T = y.tecnologia, ST = y.ambos,
+                       C = y.tecnologia)
+    ComparaCenario(paste0("sem_paises_curtos_", k), linhas,
+                   Escore(dea(x.modelo[linhas, ],
+                              y.modelo[linhas, , drop = FALSE],
+                              RTS = "vrs", ORIENTATION = "out")),
+                   escores[[paste0("bcc_", k)]])
+  }
+  Nota("sem países de menos de ", kMinAnosPais, " anos: ", length(linhas),
+       " DMUs, ", length(longos), " países")
+})
+
+Bloco("rob-semzeros-STC", {
+  linhas <- which(!dados$zero_inv)
+  for (k in c("S", "T", "C")) {
+    x.modelo <- if (k == "C") x.conversao else x.extensivo
+    y.modelo <- if (k == "S") y.ciencia else y.tecnologia
+    escore.novo <- Escore(dea(x.modelo[linhas, ],
+                              y.modelo[linhas, , drop = FALSE],
+                              RTS = "vrs", ORIENTATION = "out"))
+    ComparaCenario(paste0("sem_zeros_", k), linhas, escore.novo,
+                   escores[[paste0("bcc_", k)]])
+    escores[[paste0("bcc_", k, "_semzeros")]] <- NA_real_
+    escores[[paste0("bcc_", k, "_semzeros")]][linhas] <- escore.novo
+  }
+  ranking.com <- escores %>%
+    group_by(Country) %>%
+    summarise(com = mean(bcc_C), sem = mean(bcc_C_semzeros, na.rm = TRUE),
+              .groups = "drop")
+  Nota("ranking de conversão por país, com e sem os zeros: Spearman = ",
+       Spearman(ranking.com$com, ranking.com$sem))
+})
+
+Bloco("rob-so-PD", {
+  x.rd <- x.extensivo[, "rd_usd", drop = FALSE]
+  todas <- seq_len(nrow(dados))
+  ComparaCenario("so_PD_S", todas,
+                 Escore(dea(x.rd, y.ciencia, RTS = "vrs",
+                            ORIENTATION = "out")),
+                 escores$bcc_S)
+  ComparaCenario("so_PD_T", todas,
+                 Escore(dea(x.rd, y.tecnologia, RTS = "vrs",
+                            ORIENTATION = "out")),
+                 escores$bcc_T)
 })
 
 tab.robustez <- bind_rows(robustez) %>%
@@ -1058,6 +1430,168 @@ Bloco("malmquist", {
          height = 4, dpi = 150)
 })
 
+# 10b. Metafronteira: fronteira global contra fronteiras contemporâneas --
+
+# A segunda sessão apontou que o painel desbalanceado justifica ler a
+# fronteira agrupada como metafronteira. Ela é a fronteira global ou
+# intertemporal (Tulkens & Vanden Eeckaut, 1995; Pastor & Lovell, 2005), que
+# envolve as fronteiras contemporâneas de cada ano; a razão entre a
+# eficiência contra a fronteira do ano e a eficiência contra a fronteira
+# global é a lacuna tecnológica (TGR) de O'Donnell, Rao & Battese (2008).
+# Como o envelope agrupado convexifica a união das tecnologias anuais, a
+# versão não convexa é estimada ao lado (Kerstens, O'Donnell & Van de
+# Woestyne, 2019), e a lacuna por ano é recalculada com o número de DMUs
+# igualado, porque anos com poucas observações têm eficiência contemporânea
+# inflada.
+
+Nota("=== 10b. Metafronteira: fronteira global, contemporânea, sequencial ",
+     "e união; lacuna tecnológica (TGR) ===")
+metafronteira <- list()
+for (k in c("S", "T", "ST", "C")) {
+  Bloco(paste0("metafronteira-", k), {
+    x.modelo <- if (k == "C") x.conversao else x.extensivo
+    y.modelo <- switch(k, S = y.ciencia, T = y.tecnologia, ST = y.ambos,
+                       C = y.tecnologia)
+    eff.global <- eff(modelos[[k]]$vrs)
+    eff.contemp <- EficienciaPorGrupo(x.modelo, y.modelo, dados$Year)
+    eff.seq <- EficienciaPorGrupo(x.modelo, y.modelo, dados$Year,
+                                  Referencia = function(ano) {
+                                    which(dados$Year <= ano)
+                                  })
+    eff.uniao <- EficienciaUniao(x.modelo, y.modelo, dados$Year)
+    metafronteira[[k]] <- tibble(
+      modelo = k,
+      Country_Year = dados$Country_Year,
+      Country = dados$Country,
+      Year = dados$Year,
+      zero_inv = dados$zero_inv,
+      esc_contemp = pmin(1 / eff.contemp, 1),
+      esc_seq = pmin(1 / eff.seq, 1),
+      esc_uniao = pmin(1 / eff.uniao, 1),
+      esc_global = pmin(1 / eff.global, 1),
+      tgr = eff.contemp / eff.global,
+      tgr_uniao = eff.contemp / eff.uniao,
+      convexificacao = eff.global / eff.uniao)
+    n.minimo <- min(table(dados$Year))
+    por.ano <- metafronteira[[k]] %>%
+      group_by(Year) %>%
+      summarise(n = n(),
+                efic_contemp_pct = PctEficientes(esc_contemp),
+                efic_global_pct = PctEficientes(esc_global),
+                tgr_medio = mean(tgr),
+                tgr_geometrico = MediaGeometrica(tgr),
+                tgr_uniao = mean(tgr_uniao),
+                gap_sequencial = mean(esc_seq / esc_contemp),
+                .groups = "drop") %>%
+      mutate(tgr_n_igualado = TgrSubamostrado(x.modelo, y.modelo, dados$Year,
+                                              eff.global, n.minimo))
+    Salva(mutate(por.ano, across(where(is.numeric), ~ round(.x, 3))),
+          paste0("t24_metafronteira_ano_", k))
+    Nota(k, ": TGR médio ", round(mean(metafronteira[[k]]$tgr), 3),
+         " | união ", round(mean(metafronteira[[k]]$tgr_uniao), 3),
+         " | convexificação média ",
+         round(mean(metafronteira[[k]]$convexificacao), 3),
+         " | DMUs na metatecnologia não convexa ",
+         round(100 * mean(metafronteira[[k]]$convexificacao < 1 + kTolEfic)),
+         "%")
+    Nota(k, ": TGR por ano ",
+         paste(por.ano$Year, round(por.ano$tgr_medio, 2), collapse = " "),
+         " | com n igualado em ", n.minimo, ": ",
+         paste(round(por.ano$tgr_n_igualado, 2), collapse = " "))
+  })
+}
+
+Bloco("malmquist-global", {
+  tab.meta <- bind_rows(metafronteira)
+  Salva(mutate(tab.meta, across(where(is.numeric), ~ round(.x, 4))),
+        "t23_metafronteira_dmu")
+  # Malmquist global (Pastor & Lovell, 2005) entre o primeiro e o último ano
+  # observado de cada país: M = EC × BPC, sem exigir painel balanceado.
+  malm.global <- tab.meta %>%
+    filter(modelo == "S") %>%
+    group_by(Country) %>%
+    filter(n() >= 2) %>%
+    arrange(Year, .by_group = TRUE) %>%
+    summarise(ano_ini = first(Year),
+              ano_fim = last(Year),
+              n = n(),
+              M_global = last(esc_global) / first(esc_global),
+              EC = last(esc_contemp) / first(esc_contemp),
+              BPC = last(tgr) / first(tgr),
+              .groups = "drop") %>%
+    arrange(desc(M_global))
+  Salva(mutate(malm.global, across(where(is.numeric), ~ round(.x, 3))),
+        "t25_malmquist_global_pais")
+  Nota("Malmquist global S (", nrow(malm.global),
+       " países com 2 anos ou mais, contra 13 no subpainel balanceado): ",
+       "M = ", round(MediaGeometrica(malm.global$M_global), 3), " | EC = ",
+       round(MediaGeometrica(malm.global$EC), 3), " | BPC = ",
+       round(MediaGeometrica(malm.global$BPC), 3))
+  Nota("decomposição M = EC × BPC: desvio máximo ",
+       signif(max(abs(malm.global$M_global -
+                        malm.global$EC * malm.global$BPC)), 2))
+  # A comparação com o faremalm2 só é legítima no mesmo período e nos mesmos
+  # países, porque o índice global acima cobre todo o intervalo observado de
+  # cada país, que varia de dois a nove anos.
+  if (exists("indices")) {
+    comum <- intersect(malm.global$Country, unique(indices$id))
+    global.mesmo.periodo <- tab.meta %>%
+      filter(modelo == "S", Country %in% comum,
+             Year %in% c(2016, 2021)) %>%
+      group_by(Country) %>%
+      filter(n() == 2) %>%
+      arrange(Year, .by_group = TRUE) %>%
+      summarise(M = last(esc_global) / first(esc_global), .groups = "drop")
+    balanceado.pais <- indices %>%
+      group_by(id) %>%
+      summarise(M = MediaGeometrica(pc)^5, .groups = "drop")
+    pareado <- inner_join(global.mesmo.periodo,
+                          rename(balanceado.pais, Country = id, M_fare = M),
+                          by = "Country")
+    Nota("Malmquist 2016→2021 nos ", nrow(pareado),
+         " países do subpainel: global M = ",
+         round(MediaGeometrica(pareado$M), 3), " | faremalm2 acumulado M = ",
+         round(MediaGeometrica(pareado$M_fare), 3), " | Spearman = ",
+         Spearman(pareado$M, pareado$M_fare))
+  }
+  figura <- tab.meta %>%
+    group_by(modelo, Year) %>%
+    summarise(n = n(), tgr = mean(tgr), .groups = "drop") %>%
+    ggplot(aes(factor(Year), tgr, fill = modelo)) +
+    geom_col(position = "dodge") +
+    geom_text(aes(label = n, y = 0.03), position = position_dodge(0.9),
+              size = 2.4) +
+    theme_bw() +
+    labs(x = NULL, fill = "modelo",
+         y = paste0("lacuna tecnológica: eficiência contemporânea / ",
+                    "eficiência global"))
+  ggsave(file.path(kDirFiguras, "fig13_tgr_por_ano.png"), figura, width = 8,
+         height = 4, dpi = 150)
+})
+
+# Metafronteira por faixa de renda, exploratória: a amostra só comporta dois
+# grupos (renda alta contra as demais).
+Bloco("metafronteira-renda", {
+  grupo.renda <- ifelse(dados$income == "Alta", "Alta", "Média")
+  linhas.renda <- map_dfr(c("S", "T"), function(k) {
+    x.modelo <- x.extensivo
+    y.modelo <- if (k == "S") y.ciencia else y.tecnologia
+    eff.global <- eff(modelos[[k]]$vrs)
+    eff.grupo <- EficienciaPorGrupo(x.modelo, y.modelo, grupo.renda)
+    tibble(modelo = k, grupo = grupo.renda, tgr = eff.grupo / eff.global,
+           esc_grupo = pmin(1 / eff.grupo, 1)) %>%
+      group_by(modelo, grupo) %>%
+      summarise(n = n(), esc_grupo = mean(esc_grupo), tgr = mean(tgr),
+                .groups = "drop")
+  })
+  Salva(mutate(linhas.renda, across(where(is.numeric), ~ round(.x, 3))),
+        "t24b_metafronteira_renda")
+  Nota("metafronteira por renda (exploratória): ",
+       paste(sprintf("%s/%s n=%d TGR=%.2f", linhas.renda$modelo,
+                     linhas.renda$grupo, linhas.renda$n, linhas.renda$tgr),
+             collapse = " | "))
+})
+
 # 11. Ganhos com fusões: blocos regionais -------------------------------
 
 Nota("=== 11. Ganhos com fusões: blocos regionais ",
@@ -1190,6 +1724,7 @@ for (k in c("bcc_S", "bcc_T", "bcc_C", "se_ST", "bcc_S_int", "bcc_T_int",
     ols.cluster[[k]] <- tibble(escore = k,
                                variavel = rownames(teste.ols),
                                coef_ols = teste.ols[, 1],
+                               ep_cluster = teste.ols[, 2],
                                p_cluster = teste.ols[, 4])
   })
 }
@@ -1212,8 +1747,25 @@ Bloco("tobit-sensibilidade", {
                     "so governanca" = "+ gov",
                     "so voice" = "+ voice",
                     "governanca e voice" = "+ gov + voice")
+  # A especialização do sistema científico entra só aqui. A participação
+  # contemporânea de IA é simultânea aos produtos do modelo; por isso a
+  # versão usada é a anterior ao período (2008-2012), predeterminada, ao lado
+  # da participação das ciências exatas e da vida.
+  extras <- c("stem_share", "ai_share_pre")
+  tem.especializacao <- all(extras %in% names(dados)) &&
+    !any(is.na(dados$stem_share[obs.completas])) &&
+    !any(is.na(dados$ai_share_pre[obs.completas]))
+  if (tem.especializacao) {
+    conjuntos[["governanca, voice e STEM"]] <- "+ gov + voice + stem_share"
+    conjuntos[["governanca, voice e IA prévia"]] <-
+      "+ gov + voice + ai_share_pre"
+  }
   base.reg <- cbind(Country = dados$Country,
                     z.contextuais)[obs.completas, ]
+  if (tem.especializacao) {
+    base.reg$stem_share <- dados$stem_share[obs.completas]
+    base.reg$ai_share_pre <- dados$ai_share_pre[obs.completas]
+  }
   linhas.sens <- list()
   for (k in c("bcc_S", "bcc_T", "bcc_C")) {
     dados.reg <- base.reg
@@ -1245,7 +1797,11 @@ Bloco("tobit-sensibilidade", {
           voice_tobit = CoefOuNa(estimativas, "voice", 1),
           voice_p_tobit = CoefOuNa(estimativas, "voice", 4),
           gov_tobit = CoefOuNa(estimativas, "gov", 1),
-          gov_p_tobit = CoefOuNa(estimativas, "gov", 4))
+          gov_p_tobit = CoefOuNa(estimativas, "gov", 4),
+          espec_tobit = coalesce(CoefOuNa(estimativas, "stem_share", 1),
+                                 CoefOuNa(estimativas, "ai_share_pre", 1)),
+          espec_p_tobit = coalesce(CoefOuNa(estimativas, "stem_share", 4),
+                                   CoefOuNa(estimativas, "ai_share_pre", 4)))
       }
     }
   }
@@ -1313,14 +1869,21 @@ for (k in c("S", "T", "C")) {
     log.delta <- SimarWilsonLog(x.modelo[obs.completas, ],
                                 y.modelo[obs.completas, , drop = FALSE],
                                 z.modelo, l1 = kEnvL1, l2 = kEnvL2)
-    env.log[[k]] <- tibble(modelo = k,
-                           versao = "log(delta) (implementação própria)",
-                           variavel = c("(Intercepto)",
-                                        colnames(z.contextuais)),
-                           beta = as.numeric(log.delta$beta),
-                           ic_inf = log.delta$ci[, 1],
-                           ic_sup = log.delta$ci[, 2],
-                           sigma = as.numeric(log.delta$sigma)) %>%
+    # O erro padrão e o valor-p saem da distribuição bootstrap dos betas, para
+    # que o painel do Simar-Wilson entre na tabela de regressões no mesmo
+    # formato dos demais estimadores.
+    env.log[[k]] <- tibble(
+      modelo = k,
+      versao = "log(delta) (implementação própria)",
+      variavel = c("(Intercepto)", colnames(z.contextuais)),
+      beta = as.numeric(log.delta$beta),
+      ic_inf = log.delta$ci[, 1],
+      ic_sup = log.delta$ci[, 2],
+      ep_boot = apply(log.delta$betas, 2, sd, na.rm = TRUE),
+      p_boot = apply(log.delta$betas, 2, function(b) {
+        2 * min(mean(b <= 0, na.rm = TRUE), mean(b >= 0, na.rm = TRUE))
+      }),
+      sigma = as.numeric(log.delta$sigma)) %>%
       mutate(signif = ic_inf > 0 | ic_sup < 0)
     escores[[paste0("sw_", k)]] <- NA_real_
     escores[[paste0("sw_", k)]][obs.completas] <- 1 / log.delta$delta.bc
@@ -1363,20 +1926,194 @@ Bloco("tab-env", {
          height = 5, dpi = 150)
 })
 
+# A segunda sessão pediu, para o manuscrito, a tabela das regressões com os
+# três modelos avaliados à luz das mesmas contextuais, e uma discussão
+# baseada nas diferenças entre eles.
+
+Bloco("tab-regressoes-paper", {
+  ordem.contextuais <- c("manuf_pib", "manuf_exp", "gov", "voice",
+                         "ln_gdppc", "trade", "z_score", "npl", "zero_inv",
+                         "tend")
+  rotulos <- c(manuf_pib = "Manufatura (% do PIB)",
+               manuf_exp = "Manufaturados (% das exportações)",
+               gov = "Governança (índice)",
+               voice = "Voz e responsabilização",
+               ln_gdppc = "ln PIB per capita",
+               trade = "Comércio (% do PIB)",
+               z_score = "Z-score bancário",
+               npl = "Empréstimos inadimplentes",
+               zero_inv = "Investimento igual a zero",
+               tend = "Tendência")
+  painel.tobit <- bind_rows(tobits) %>%
+    filter(escore %in% c("bcc_S", "bcc_T", "bcc_C"),
+           variavel %in% ordem.contextuais) %>%
+    transmute(painel = "A. Tobit", modelo = sub("bcc_", "", escore),
+              variavel, coeficiente = coef, erro_padrao = ep, p)
+  painel.ols <- bind_rows(ols.cluster) %>%
+    filter(escore %in% c("bcc_S", "bcc_T", "bcc_C"),
+           variavel %in% ordem.contextuais) %>%
+    transmute(painel = "B. MQO com erros agrupados por país",
+              modelo = sub("bcc_", "", escore), variavel,
+              coeficiente = coef_ols, erro_padrao = ep_cluster,
+              p = p_cluster)
+  painel.sw <- bind_rows(env.log) %>%
+    filter(variavel %in% ordem.contextuais) %>%
+    transmute(painel = "C. Simar-Wilson em log(delta)", modelo, variavel,
+              coeficiente = beta, erro_padrao = ep_boot, p = p_boot)
+  regressoes <- bind_rows(painel.tobit, painel.ols, painel.sw) %>%
+    mutate(variavel = factor(variavel, levels = ordem.contextuais)) %>%
+    arrange(painel, variavel, modelo)
+  Salva(mutate(regressoes, across(where(is.numeric), ~ signif(.x, 4))),
+        "t20_regressoes_longa")
+
+  larga <- regressoes %>%
+    mutate(celula = FormataCelula(coeficiente, erro_padrao, p)) %>%
+    select(painel, variavel, modelo, celula) %>%
+    pivot_wider(names_from = modelo, values_from = celula) %>%
+    arrange(painel, variavel) %>%
+    mutate(contextual = rotulos[as.character(variavel)], .before = variavel) %>%
+    select(-variavel)
+  Salva(larga, "t20_regressoes_paper")
+  nota.rodape <- paste0(
+    "n = ", sum(obs.completas), " observações país-ano. Erros padrão entre ",
+    "parênteses; *** p < 0,01, ** p < 0,05, * p < 0,10. Painéis A e B: ",
+    "coeficiente positivo indica mais eficiência. Painel C: coeficiente ",
+    "sobre o logaritmo da distância à fronteira, de modo que o sinal ",
+    "negativo indica mais eficiência; erro padrão e valor-p vêm de ",
+    kEnvL2, " réplicas bootstrap.")
+  writeLines(c("| Painel | Contextual | S | T | C |",
+               "|---|---|---|---|---|",
+               sprintf("| %s | %s | %s | %s | %s |", larga$painel,
+                       larga$contextual, larga$S, larga$T, larga$C),
+               "", nota.rodape),
+             file.path(kDirResultados, "t20_regressoes_paper.md"))
+
+  # Leitura das nuances: em que modelos cada contextual é significativa e em
+  # que sentido, já com o sinal do painel C invertido para que "+" signifique
+  # sempre mais eficiência.
+  nuances <- regressoes %>%
+    mutate(sinal = ifelse(grepl("^C\\.", painel), -sign(coeficiente),
+                          sign(coeficiente)),
+           relevante = !is.na(p) & p < 0.05) %>%
+    group_by(contextual = rotulos[as.character(variavel)], modelo) %>%
+    summarise(n_signif = sum(relevante),
+              sentido = ifelse(n_signif == 0, "·",
+                               ifelse(n_distinct(sinal[relevante]) > 1, "±",
+                                      ifelse(first(sinal[relevante]) > 0,
+                                             "+", "−"))),
+              .groups = "drop") %>%
+    mutate(marca = paste0(sentido, n_signif)) %>%
+    select(contextual, modelo, marca) %>%
+    pivot_wider(names_from = modelo, values_from = marca)
+  Salva(nuances, "t20b_nuances_contextuais")
+  print(as.data.frame(nuances))
+  resumo <<- c(resumo,
+               paste0("Nuances entre modelos (sentido e nº de estimadores ",
+                      "significativos a 5%; + = mais eficiência):"),
+               capture.output(print(as.data.frame(nuances))))
+})
+
 Bloco("fig11", {
+  # O rótulo marca os países cuja média vem de menos de kMinAnosPais anos e os
+  # que só têm anos sem investimento, para que o topo do ranking não seja lido
+  # sem essa ressalva.
   figura <- medias.pais %>%
-    mutate(Country = fct_reorder(Country, bcc_C)) %>%
-    ggplot(aes(Country, bcc_C, fill = manuf_pib)) +
-    geom_col() +
+    mutate(rotulo = paste0(Country,
+                           ifelse(no_ranking, "", " (n<3)"),
+                           ifelse(n_zeros > 0,
+                                  paste0(" \u2020", n_zeros), "")),
+           rotulo = fct_reorder(rotulo, bcc_C)) %>%
+    ggplot(aes(rotulo, bcc_C, fill = manuf_pib)) +
+    geom_col(aes(alpha = no_ranking)) +
+    scale_alpha_manual(values = c(`TRUE` = 1, `FALSE` = 0.45), guide = "none") +
     coord_flip() +
     theme_bw() +
     labs(x = NULL,
          y = paste0("eficiência de conversão pesquisa → patente (BCC, ",
-                    "média dos anos)"),
+                    "média dos anos); \u2020 = anos sem investimento"),
          fill = "manufatura\n% PIB")
   ggsave(file.path(kDirFiguras, "fig11_conversao_pais.png"), figura, width = 7,
          height = 8, dpi = 150)
 })
+# 15b. Casos discutidos no manuscrito -----------------------------------
+
+# A segunda sessão pediu que os países que quebram o padrão, no topo e na
+# cauda do ranking, virem casos na discussão. A tabela reúne, para cada um, o
+# que o trabalho mede, quem lhe serve de referência e as marcas que explicam
+# posições surpreendentes: anos sem investimento, poucos anos observados e
+# supereficiência.
+
+Nota("=== 15b. Casos discutidos no manuscrito ===")
+Bloco("casos", {
+  pares.conversao <- peers(modelos$C$vrs)
+  nomes.pares.c <- apply(pares.conversao, 1, function(linha) {
+    paste(dados$Country_Year[linha[!is.na(linha)]], collapse = "; ")
+  })
+  casos <- escores %>%
+    transmute(Country, Year, Country_Year, zero_inv,
+              inv_const_mi = dados$inv_const / 1e6,
+              rd_mi = dados$rd_usd / 1e6,
+              pubs = dados$pubs,
+              pat = dados$pat,
+              manuf_pib,
+              bcc_S, bcc_T, bcc_C,
+              pares_C = nomes.pares.c) %>%
+    filter(Country %in% kPaisesCaso) %>%
+    left_join(select(escores, Country_Year, bcc_ST), by = "Country_Year") %>%
+    arrange(Country, Year)
+  if (exists("supereficiencia")) {
+    casos <- left_join(casos,
+                       select(supereficiencia, Country_Year = DMU,
+                              super_CRS),
+                       by = "Country_Year")
+  }
+  if (length(metafronteira) > 0) {
+    tgr.c <- bind_rows(metafronteira) %>%
+      filter(modelo == "C") %>%
+      select(Country_Year, tgr)
+    casos <- left_join(casos, tgr.c, by = "Country_Year")
+  }
+  Salva(mutate(casos, across(where(is.numeric), ~ round(.x, 4))),
+        "t26_casos_discussao")
+  ancoras <- casos %>%
+    filter(zero_inv, bcc_C >= 1 - kTolEfic)
+  Nota("casos: ", n_distinct(casos$Country), " países, ", nrow(casos),
+       " observações | eficientes em C sem investimento: ",
+       paste(ancoras$Country_Year, collapse = ", "))
+})
+
+# Conferência da variável de patentes: se AI.Patent.Applications acompanha os
+# depósitos de residentes no escritório nacional, a leitura de que os países
+# que depositam via EPO e PCT aparecem com patente quase nula ganha evidência
+# dentro da própria base.
+Bloco("patentes-escritorio", {
+  por.pais <- dados %>%
+    group_by(Country) %>%
+    summarise(pat = mean(pat),
+              residentes = mean(PatentResidents),
+              nao_residentes = mean(PatentNonResidents),
+              total = mean(Total_Patents),
+              pop_mi = mean(pop_mi),
+              epo = first(Country %in% kPaisesEpo),
+              .groups = "drop")
+  Nota("patentes de IA × depósitos na base (médias por país): ",
+       "cor(log pat, log residentes) = ",
+       round(cor(log(por.pais$pat), log(por.pais$residentes),
+                 use = "complete.obs"), 3),
+       " | cor(log pat, log não residentes) = ",
+       round(cor(log(por.pais$pat), log(por.pais$nao_residentes),
+                 use = "complete.obs"), 3))
+  Nota("razão patentes de IA / depósitos de residentes: mediana ",
+       round(1000 * median(por.pais$pat[por.pais$epo] /
+                             por.pais$residentes[por.pais$epo]), 2),
+       " por mil nos 13 países que depositam via EPO/PCT contra ",
+       round(1000 * median(por.pais$pat[!por.pais$epo] /
+                             por.pais$residentes[!por.pais$epo]), 2),
+       " por mil nos demais (valores sobre médias por país)")
+  Salva(mutate(por.pais, across(where(is.numeric), ~ round(.x, 4))),
+        "t27_patentes_escritorio")
+})
+
 Salva(mutate(escores, across(where(is.numeric), ~ round(.x, 4))),
       "t04_escores_dmu")
 

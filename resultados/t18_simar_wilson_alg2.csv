@@ -1,67 +1,67 @@
-modelo,versao,variavel,beta,ic_inf,ic_sup,sigma,signif
-S,linear em delta (rDEA),(Intercepto),-63.7,-122,-37.5,4.14,TRUE
-S,linear em delta (rDEA),manuf_pib,-0.272,-0.624,0.073,4.14,FALSE
-S,linear em delta (rDEA),manuf_exp,0.0317,-0.0273,0.114,4.14,FALSE
-S,linear em delta (rDEA),gov,-4.37,-9.15,-1.78,4.14,TRUE
-S,linear em delta (rDEA),voice,-0.00679,-0.146,0.241,4.14,FALSE
-S,linear em delta (rDEA),ln_gdppc,6.99,3.69,12.6,4.14,TRUE
-S,linear em delta (rDEA),trade,-9.84e-4,-0.0176,0.0126,4.14,FALSE
-S,linear em delta (rDEA),z_score,-0.0873,-0.253,0.0599,4.14,FALSE
-S,linear em delta (rDEA),npl,-0.603,-0.957,-0.189,4.14,TRUE
-S,linear em delta (rDEA),zero_inv,2.83,-3.13,8.18,4.14,FALSE
-S,linear em delta (rDEA),tend,-0.532,-1.26,-0.142,4.14,TRUE
-T,linear em delta (rDEA),(Intercepto),197,-0.951,617,735,FALSE
-T,linear em delta (rDEA),manuf_pib,-482,-1120,-824,735,TRUE
-T,linear em delta (rDEA),manuf_exp,82.8,144,203,735,TRUE
-T,linear em delta (rDEA),gov,230,423,585,735,TRUE
-T,linear em delta (rDEA),voice,31.7,57.5,85.5,735,TRUE
-T,linear em delta (rDEA),ln_gdppc,-208,-550,-404,735,TRUE
-T,linear em delta (rDEA),trade,14.5,18.9,31.5,735,TRUE
-T,linear em delta (rDEA),z_score,-318,-696,-477,735,TRUE
-T,linear em delta (rDEA),npl,-466,-1110,-767,735,TRUE
-T,linear em delta (rDEA),zero_inv,-91.7,-280,-153,735,TRUE
-T,linear em delta (rDEA),tend,-47.5,-172,28.8,735,FALSE
-C,linear em delta (rDEA),(Intercepto),376,798,1170,331,TRUE
-C,linear em delta (rDEA),manuf_pib,-171,-482,-308,331,TRUE
-C,linear em delta (rDEA),manuf_exp,20.7,44,70.3,331,TRUE
-C,linear em delta (rDEA),gov,119,217,331,331,TRUE
-C,linear em delta (rDEA),voice,22.2,41.2,59.4,331,TRUE
-C,linear em delta (rDEA),ln_gdppc,-182,-492,-380,331,TRUE
-C,linear em delta (rDEA),trade,5.74,6.37,13.2,331,TRUE
-C,linear em delta (rDEA),z_score,-102,-304,-201,331,TRUE
-C,linear em delta (rDEA),npl,-66.2,-162,-88.3,331,TRUE
-C,linear em delta (rDEA),zero_inv,-80.6,-255,-145,331,TRUE
-C,linear em delta (rDEA),tend,94,137,258,331,TRUE
-S,log(delta) (implementação própria),(Intercepto),-3.5,-5.8,-1.33,0.555,TRUE
-S,log(delta) (implementação própria),manuf_pib,-0.0159,-0.0403,0.00911,0.555,FALSE
-S,log(delta) (implementação própria),manuf_exp,-2.42e-4,-0.00523,0.0044,0.555,FALSE
-S,log(delta) (implementação própria),gov,-0.325,-0.549,-0.107,0.555,TRUE
-S,log(delta) (implementação própria),voice,0.013,0.00106,0.0265,0.555,TRUE
-S,log(delta) (implementação própria),ln_gdppc,0.428,0.211,0.659,0.555,TRUE
-S,log(delta) (implementação própria),trade,7.5e-4,-6.44e-4,0.00204,0.555,FALSE
-S,log(delta) (implementação própria),z_score,-0.00215,-0.0132,0.00939,0.555,FALSE
-S,log(delta) (implementação própria),npl,-0.0304,-0.047,-0.0162,0.555,TRUE
-S,log(delta) (implementação própria),zero_inv,0.192,-0.175,0.523,0.555,FALSE
-S,log(delta) (implementação própria),tend,-0.0413,-0.0768,-0.00462,0.555,TRUE
-T,log(delta) (implementação própria),(Intercepto),5.62,0.607,10.8,1.46,TRUE
-T,log(delta) (implementação própria),manuf_pib,-0.0965,-0.153,-0.0306,1.46,TRUE
-T,log(delta) (implementação própria),manuf_exp,0.0187,0.00695,0.0315,1.46,TRUE
-T,log(delta) (implementação própria),gov,0.426,-0.158,0.944,1.46,FALSE
-T,log(delta) (implementação própria),voice,0.0449,0.0128,0.0826,1.46,TRUE
-T,log(delta) (implementação própria),ln_gdppc,-0.464,-0.939,0.0209,1.46,FALSE
-T,log(delta) (implementação própria),trade,0.00236,-0.00132,0.00558,1.46,FALSE
-T,log(delta) (implementação própria),z_score,-0.0566,-0.0868,-0.029,1.46,TRUE
-T,log(delta) (implementação própria),npl,-0.013,-0.0419,0.0115,1.46,FALSE
-T,log(delta) (implementação própria),zero_inv,-2.12,-3.26,-1.08,1.46,TRUE
-T,log(delta) (implementação própria),tend,0.0705,-0.0177,0.16,1.46,FALSE
-C,log(delta) (implementação própria),(Intercepto),6.8,2.11,11.4,1.35,TRUE
-C,log(delta) (implementação própria),manuf_pib,-0.0853,-0.153,-0.0303,1.35,TRUE
-C,log(delta) (implementação própria),manuf_exp,0.0166,0.00569,0.0268,1.35,TRUE
-C,log(delta) (implementação própria),gov,0.418,-0.0365,0.861,1.35,FALSE
-C,log(delta) (implementação própria),voice,0.0469,0.0191,0.0786,1.35,TRUE
-C,log(delta) (implementação própria),ln_gdppc,-0.617,-1.09,-0.186,1.35,TRUE
-C,log(delta) (implementação própria),trade,0.00453,0.00135,0.00754,1.35,TRUE
-C,log(delta) (implementação própria),z_score,-0.0738,-0.1,-0.0461,1.35,TRUE
-C,log(delta) (implementação própria),npl,-0.0119,-0.039,0.0159,1.35,FALSE
-C,log(delta) (implementação própria),zero_inv,-2.22,-3.21,-1.31,1.35,TRUE
-C,log(delta) (implementação própria),tend,0.0924,-0.0041,0.186,1.35,FALSE
+modelo,versao,variavel,beta,ic_inf,ic_sup,sigma,signif,ep_boot,p_boot
+S,linear em delta (rDEA),(Intercepto),-63.7,-122,-37.5,4.14,TRUE,NA,NA
+S,linear em delta (rDEA),manuf_pib,-0.272,-0.624,0.073,4.14,FALSE,NA,NA
+S,linear em delta (rDEA),manuf_exp,0.0317,-0.0273,0.114,4.14,FALSE,NA,NA
+S,linear em delta (rDEA),gov,-4.37,-9.15,-1.78,4.14,TRUE,NA,NA
+S,linear em delta (rDEA),voice,-0.00679,-0.146,0.241,4.14,FALSE,NA,NA
+S,linear em delta (rDEA),ln_gdppc,6.99,3.69,12.6,4.14,TRUE,NA,NA
+S,linear em delta (rDEA),trade,-9.84e-4,-0.0176,0.0126,4.14,FALSE,NA,NA
+S,linear em delta (rDEA),z_score,-0.0873,-0.253,0.0599,4.14,FALSE,NA,NA
+S,linear em delta (rDEA),npl,-0.603,-0.957,-0.189,4.14,TRUE,NA,NA
+S,linear em delta (rDEA),zero_inv,2.83,-3.13,8.18,4.14,FALSE,NA,NA
+S,linear em delta (rDEA),tend,-0.532,-1.26,-0.142,4.14,TRUE,NA,NA
+T,linear em delta (rDEA),(Intercepto),197,-0.951,617,735,FALSE,NA,NA
+T,linear em delta (rDEA),manuf_pib,-482,-1120,-824,735,TRUE,NA,NA
+T,linear em delta (rDEA),manuf_exp,82.8,144,203,735,TRUE,NA,NA
+T,linear em delta (rDEA),gov,230,423,585,735,TRUE,NA,NA
+T,linear em delta (rDEA),voice,31.7,57.5,85.5,735,TRUE,NA,NA
+T,linear em delta (rDEA),ln_gdppc,-208,-550,-404,735,TRUE,NA,NA
+T,linear em delta (rDEA),trade,14.5,18.9,31.5,735,TRUE,NA,NA
+T,linear em delta (rDEA),z_score,-318,-696,-477,735,TRUE,NA,NA
+T,linear em delta (rDEA),npl,-466,-1110,-767,735,TRUE,NA,NA
+T,linear em delta (rDEA),zero_inv,-91.7,-280,-153,735,TRUE,NA,NA
+T,linear em delta (rDEA),tend,-47.5,-172,28.8,735,FALSE,NA,NA
+C,linear em delta (rDEA),(Intercepto),376,798,1170,331,TRUE,NA,NA
+C,linear em delta (rDEA),manuf_pib,-171,-482,-308,331,TRUE,NA,NA
+C,linear em delta (rDEA),manuf_exp,20.7,44,70.3,331,TRUE,NA,NA
+C,linear em delta (rDEA),gov,119,217,331,331,TRUE,NA,NA
+C,linear em delta (rDEA),voice,22.2,41.2,59.4,331,TRUE,NA,NA
+C,linear em delta (rDEA),ln_gdppc,-182,-492,-380,331,TRUE,NA,NA
+C,linear em delta (rDEA),trade,5.74,6.37,13.2,331,TRUE,NA,NA
+C,linear em delta (rDEA),z_score,-102,-304,-201,331,TRUE,NA,NA
+C,linear em delta (rDEA),npl,-66.2,-162,-88.3,331,TRUE,NA,NA
+C,linear em delta (rDEA),zero_inv,-80.6,-255,-145,331,TRUE,NA,NA
+C,linear em delta (rDEA),tend,94,137,258,331,TRUE,NA,NA
+S,log(delta) (implementação própria),(Intercepto),-3.5,-5.8,-1.33,0.555,TRUE,1.13,0
+S,log(delta) (implementação própria),manuf_pib,-0.0159,-0.0403,0.00911,0.555,FALSE,0.0125,0.2
+S,log(delta) (implementação própria),manuf_exp,-2.42e-4,-0.00523,0.0044,0.555,FALSE,0.00236,0.96
+S,log(delta) (implementação própria),gov,-0.325,-0.549,-0.107,0.555,TRUE,0.114,0.008
+S,log(delta) (implementação própria),voice,0.013,0.00106,0.0265,0.555,TRUE,0.00636,0.024
+S,log(delta) (implementação própria),ln_gdppc,0.428,0.211,0.659,0.555,TRUE,0.117,0
+S,log(delta) (implementação própria),trade,7.5e-4,-6.44e-4,0.00204,0.555,FALSE,6.62e-4,0.252
+S,log(delta) (implementação própria),z_score,-0.00215,-0.0132,0.00939,0.555,FALSE,0.00579,0.672
+S,log(delta) (implementação própria),npl,-0.0304,-0.047,-0.0162,0.555,TRUE,0.00748,0
+S,log(delta) (implementação própria),zero_inv,0.192,-0.175,0.523,0.555,FALSE,0.178,0.256
+S,log(delta) (implementação própria),tend,-0.0413,-0.0768,-0.00462,0.555,TRUE,0.0192,0.024
+T,log(delta) (implementação própria),(Intercepto),5.62,0.607,10.8,1.46,TRUE,2.53,0.028
+T,log(delta) (implementação própria),manuf_pib,-0.0965,-0.153,-0.0306,1.46,TRUE,0.0329,0
+T,log(delta) (implementação própria),manuf_exp,0.0187,0.00695,0.0315,1.46,TRUE,0.00603,0
+T,log(delta) (implementação própria),gov,0.426,-0.158,0.944,1.46,FALSE,0.281,0.164
+T,log(delta) (implementação própria),voice,0.0449,0.0128,0.0826,1.46,TRUE,0.0178,0.008
+T,log(delta) (implementação própria),ln_gdppc,-0.464,-0.939,0.0209,1.46,FALSE,0.248,0.06
+T,log(delta) (implementação própria),trade,0.00236,-0.00132,0.00558,1.46,FALSE,0.00177,0.188
+T,log(delta) (implementação própria),z_score,-0.0566,-0.0868,-0.029,1.46,TRUE,0.0148,0
+T,log(delta) (implementação própria),npl,-0.013,-0.0419,0.0115,1.46,FALSE,0.0143,0.388
+T,log(delta) (implementação própria),zero_inv,-2.12,-3.26,-1.08,1.46,TRUE,0.521,0
+T,log(delta) (implementação própria),tend,0.0705,-0.0177,0.16,1.46,FALSE,0.0474,0.164
+C,log(delta) (implementação própria),(Intercepto),6.8,2.11,11.4,1.35,TRUE,2.33,0.004
+C,log(delta) (implementação própria),manuf_pib,-0.0853,-0.153,-0.0303,1.35,TRUE,0.0305,0.004
+C,log(delta) (implementação própria),manuf_exp,0.0166,0.00569,0.0268,1.35,TRUE,0.00561,0.004
+C,log(delta) (implementação própria),gov,0.418,-0.0365,0.861,1.35,FALSE,0.242,0.068
+C,log(delta) (implementação própria),voice,0.0469,0.0191,0.0786,1.35,TRUE,0.0153,0.008
+C,log(delta) (implementação própria),ln_gdppc,-0.617,-1.09,-0.186,1.35,TRUE,0.232,0.008
+C,log(delta) (implementação própria),trade,0.00453,0.00135,0.00754,1.35,TRUE,0.00168,0.004
+C,log(delta) (implementação própria),z_score,-0.0738,-0.1,-0.0461,1.35,TRUE,0.0141,0
+C,log(delta) (implementação própria),npl,-0.0119,-0.039,0.0159,1.35,FALSE,0.0141,0.364
+C,log(delta) (implementação própria),zero_inv,-2.22,-3.21,-1.31,1.35,TRUE,0.507,0
+C,log(delta) (implementação própria),tend,0.0924,-0.0041,0.186,1.35,FALSE,0.0477,0.064

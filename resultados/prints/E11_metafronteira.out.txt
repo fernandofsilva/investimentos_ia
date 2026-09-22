@@ -1,0 +1,6 @@
+modelo T | eficientes contra o próprio ano 17.8 % | contra a fronteira global 3.4 %
+lacuna tecnológica média: 0.485 | contra a união não convexa: 0.565 | efeito da convexificação: 1.196 
+lacuna por ano:
+2013 2014 2015 2016 2017 2018 2019 2020 2021 
+0.63 0.36 0.29 0.27 0.35 0.52 0.61 0.83 0.68 
+Malmquist global do modelo T em 34 países (contra 13 no subpainel balanceado): M = 0.374 | EC = 0.271 | BPC = 1.381 
